@@ -1,11 +1,13 @@
 import client from "@/api/client";
 import { placeholder } from "@/const/placeholder";
 import {
+  AllChoicesResponseDto,
+  ChoiceResponseDto,
   ProductCreateDto,
   ProductResponseDto,
   ProductUpdateDto,
-  choiceSchema,
 } from "@/types/swagger.types";
+import { jwt_token, upload_profile } from "@/utils/config";
 import {
   Button,
   Checkbox,
@@ -54,44 +56,43 @@ export default function ProductForm({
 }) {
   const [resource, setResource] = useState<CldUploadWidgetInfo | null>(null);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const token = getCookie("shopping-jwt") as string | null;
+  const token = getCookie(jwt_token) as string | null;
   const [productName, setProductName] = useState<string>(
     product_res ? product_res.name : ""
   );
   const [description, setDescription] = useState<string>(
     product_res ? product_res.description : ""
   );
-  const [choices, setChoices] = useState<choiceSchema[]>(
+  const [choices, setChoices] = useState<ChoiceResponseDto[]>(
     product_res ? product_res.choices : []
   );
   const [price, setPrice] = useState<number>(
     product_res ? product_res.price : 0
   );
   const [images, setImages] = useState<string[]>(
-    product_res ? product_res.image : []
-  );
-  const [isAvailable, setIsAvailable] = useState<boolean>(
-    product_res ? product_res.isAvailable : false
+    product_res ? product_res.images : []
   );
   const [published_at, setPublished_at] = useState<boolean>(
     product_res ? product_res.published_at !== null : false
   );
   const [newChoiceName, setNewChoiceName] = useState<string>("");
   const [newChoicePrice, setNewChoicePrice] = useState<number>(0);
-  const [allChoices, setAllChoices] = useState<choiceSchema[] | undefined>([]);
+  const [allChoices, setAllChoices] = useState<
+    AllChoicesResponseDto | undefined
+  >([]);
   const [editChoice, setEditChoice] = useState<string | undefined>("");
   const [editChoiceName, setEditChoiceName] = useState<string | undefined>("");
   const [editChoicePrice, setEditChoicePrice] = useState<number | undefined>(0);
 
   useEffect(() => {
     client
-      .GET("/api/v1/choices", {
+      .GET("/choices/", {
         headers: {
           authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        setAllChoices(res.data);
+        if (res.data) setAllChoices(res.data as AllChoicesResponseDto);
       });
   }, [isOpen]);
 
@@ -108,28 +109,22 @@ export default function ProductForm({
       let update_product: ProductUpdateDto = {
         name: productName,
         description: description,
-        choices: choices?.map((choice) => choice._id),
+        choices: choices?.map((choice) => choice.id),
         price: price,
-        image: images,
+        images: images,
       };
       setProductUpdate(update_product);
     } else if (setProductCreate) {
       let create_product: ProductCreateDto = {
         name: productName,
         description: description,
-        choices: choices?.map((choice) => choice._id),
+        choices: choices?.map((choice) => choice.id),
         price: price,
-        image: images,
+        images: images,
       };
       setProductCreate(create_product);
     }
   }, [productName, description, choices, price, images]);
-
-  useEffect(() => {
-    if (setAvailable) {
-      setAvailable(isAvailable);
-    }
-  }, [isAvailable]);
 
   useEffect(() => {
     if (setIsPublish) {
@@ -144,7 +139,7 @@ export default function ProductForm({
     }
 
     client
-      .POST("/api/v1/choices", {
+      .POST("/choices/", {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -169,7 +164,7 @@ export default function ProductForm({
 
   function onSaveChoice() {
     client
-      .PATCH("/api/v1/choices/{id}", {
+      .PATCH("/choices/{id}", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -188,7 +183,7 @@ export default function ProductForm({
           position: "bottom-right",
         });
         let newChoices = [...choices];
-        let index = newChoices.findIndex((c) => c._id === editChoice);
+        let index = newChoices.findIndex((c) => c.id === editChoice);
         newChoices[index].name = editChoiceName as string;
         newChoices[index].price = editChoicePrice as number;
         setChoices(newChoices);
@@ -286,15 +281,13 @@ export default function ProductForm({
                     <ModalBody className="no-scrollbar">
                       <CheckboxGroup
                         label="ตัวเลือกทั้งหมด"
-                        defaultValue={
-                          choices?.map((choice) => choice._id) || []
-                        }
+                        defaultValue={choices?.map((choice) => choice.id) || []}
                       >
                         {allChoices?.map((choice) => {
                           return (
                             <Checkbox
-                              key={choice._id}
-                              value={choice._id}
+                              key={choice.id}
+                              value={choice.id}
                               onChange={(e) => {
                                 if (e.target.checked) {
                                   if (choices) {
@@ -304,7 +297,7 @@ export default function ProductForm({
                                   }
                                 } else {
                                   setChoices(
-                                    choices.filter((c) => c._id !== choice._id)
+                                    choices.filter((c) => c.id !== choice.id)
                                   );
                                 }
                               }}
@@ -333,7 +326,7 @@ export default function ProductForm({
             <TableBody>
               {choices?.map((choice, index) => {
                 return (
-                  <TableRow key={choice._id}>
+                  <TableRow key={choice.id}>
                     <TableCell width={50}>
                       <div className="flex flex-col justify-center text-lg">
                         <div className="self-center">
@@ -361,40 +354,40 @@ export default function ProductForm({
                     <TableCell>
                       <input
                         className={`w-full ${
-                          editChoice === choice._id ? "bg-gray-100" : "bg-white"
+                          editChoice === choice.id ? "bg-gray-100" : "bg-white"
                         } px-2 py-2 rounded-md`}
                         type="text"
                         value={
-                          editChoice === choice._id
+                          editChoice === choice.id
                             ? editChoiceName
                             : choice.name
                         }
                         onChange={(e) => {
                           setEditChoiceName(e.target.value);
                         }}
-                        disabled={editChoice !== choice._id}
+                        disabled={editChoice !== choice.id}
                       />
                     </TableCell>
                     <TableCell>
                       <input
                         className={`w-full ${
-                          editChoice === choice._id ? "bg-gray-100" : "bg-white"
+                          editChoice === choice.id ? "bg-gray-100" : "bg-white"
                         } px-2 py-2 rounded-md`}
                         type="number"
                         value={
-                          editChoice === choice._id
+                          editChoice === choice.id
                             ? editChoicePrice?.toString()
                             : choice.price.toString()
                         }
                         onChange={(e) => {
                           setEditChoicePrice(+e.target.value);
                         }}
-                        disabled={editChoice !== choice._id}
+                        disabled={editChoice !== choice.id}
                       />
                     </TableCell>
                     <TableCell width={170}>
                       <div className="flex flex-row">
-                        {editChoice === choice._id ? (
+                        {editChoice === choice.id ? (
                           <div className="flex gap-2">
                             <Button
                               size="sm"
@@ -419,7 +412,7 @@ export default function ProductForm({
                           <div>
                             <button
                               onClick={() => {
-                                setEditChoice(choice._id);
+                                setEditChoice(choice.id);
                                 setEditChoiceName(choice.name);
                                 setEditChoicePrice(choice.price);
                               }}
@@ -436,7 +429,7 @@ export default function ProductForm({
                           <button
                             onClick={() => {
                               setChoices(
-                                choices.filter((c) => c._id !== choice._id)
+                                choices.filter((c) => c.id !== choice.id)
                               );
                             }}
                           >
@@ -560,7 +553,7 @@ export default function ProductForm({
 
             <CldUploadButton
               className="ml-2 z-0 group relative inline-flex items-center justify-center box-border appearance-none select-none whitespace-nowrap font-normal subpixel-antialiased overflow-hidden tap-highlight-transparent outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 px-unit-4 min-w-unit-20 h-unit-10 text-small gap-unit-2 rounded-medium [&>svg]:max-w-[theme(spacing.unit-8)] data-[pressed=true]:scale-[0.97] transition-transform-colors-opacity motion-reduce:transition-none bg-default text-default-foreground data-[hover=true]:opacity-hover"
-              uploadPreset="n1wehvy6"
+              uploadPreset={upload_profile}
               onUpload={(result, widget) => {
                 setResource(result?.info as CldUploadWidgetInfo);
                 widget.close();
@@ -595,29 +588,6 @@ export default function ProductForm({
             เผยแพร่
           </span>
         </div>
-        <Divider orientation="vertical" />
-        {product_res ? (
-          <div className="flex flex-row">
-            <span className={`${isAvailable ? "text-gray-400" : "text-black"}`}>
-              สินค้าหมด
-            </span>
-            <Switch
-              color="success"
-              isSelected={isAvailable}
-              className="ml-2"
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setIsAvailable(true);
-                } else {
-                  setIsAvailable(false);
-                }
-              }}
-            />
-            <span className={`${isAvailable ? "text-black" : "text-gray-400"}`}>
-              มีสินค้า
-            </span>
-          </div>
-        ) : null}
       </div>
     </>
   );

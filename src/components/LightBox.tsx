@@ -1,6 +1,8 @@
+import { placeholder } from "@/const/placeholder";
 import { Image } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 import { CaretLeftFill, CaretRightFill } from "react-bootstrap-icons";
+import isURL from "validator/lib/isURL";
 
 export default function LightBox({
   images,
@@ -75,7 +77,7 @@ export default function LightBox({
             radius="none"
             alt="lightbox"
             className="object-scale-down h-screen mx-auto px-2 py-2"
-            src={imageToShow}
+            src={isURL(imageToShow) ? imageToShow : placeholder}
           />
           <button onClick={showNext} className="sm:px-6 px-1">
             <p className="font-medium md:text-6xl text-xl text-white">

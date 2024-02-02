@@ -1,9 +1,10 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import { LoginResponseDto } from "@/types/swagger.types";
 
 export const useLogin = () => {
   const login = async (username: string, password: string) => {
-    const { data, error, response } = await client.POST("/api/v1/auth/login", {
+    const { data, error, response } = await client.POST("/auth/login", {
       body: {
         username: username,
         password: password,

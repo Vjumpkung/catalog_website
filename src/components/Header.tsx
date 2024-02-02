@@ -1,4 +1,5 @@
-import { ProfileResponseDto, settingsSchema } from "@/types/swagger.types";
+import { MeResponseDto, GetSettingsDto } from "@/types/swagger.types";
+import { jwt_token } from "@/utils/config";
 import {
   Avatar,
   Dropdown,
@@ -22,8 +23,8 @@ export default function Header({
   settings,
   profile,
 }: {
-  settings: settingsSchema | undefined;
-  profile: ProfileResponseDto | null | undefined;
+  settings: GetSettingsDto | undefined;
+  profile: MeResponseDto | null | undefined;
 }) {
   const [isLogin, setIsLogin] = useState<boolean>(profile ? true : false);
   const router = useRouter();
@@ -58,18 +59,6 @@ export default function Header({
         <NavbarContent justify="end">
           <NavbarItem>
             {isLogin ? (
-              <Link href="/cart">
-                <Image
-                  src={`/shopping-cart.svg`}
-                  width={32}
-                  height={32}
-                  alt="cart"
-                />
-              </Link>
-            ) : null}
-          </NavbarItem>
-          <NavbarItem>
-            {isLogin ? (
               <Dropdown placement="bottom-end">
                 <DropdownTrigger>
                   <Avatar
@@ -77,52 +66,23 @@ export default function Header({
                     name={me?.username[0].toUpperCase()}
                     as="button"
                     className="transition-transform"
-                    color={me?.role === 100 ? "primary" : "default"}
+                    color="primary"
                     size="sm"
                   />
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Profile Actions" variant="flat">
-                  <DropdownItem key="profile" className="h-14 gap-2">
-                    <p className="font-semibold text-xl">{me?.username}</p>
-                    <p className="text-gray-500">
-                      {me?.role === 100 ? "Admin" : "User"}
-                    </p>
-                  </DropdownItem>
-
                   <DropdownItem
-                    key="profile-button"
-                    onClick={() => router.push("/profile")}
+                    key="admin_page"
+                    onClick={() => router.push("/admin")}
                   >
-                    บัญชีของฉัน
+                    จัดการหลังบ้าน
                   </DropdownItem>
-                  <DropdownItem
-                    key="edit-profile"
-                    onClick={() => router.push("/edit_profile")}
-                  >
-                    แก้ไขข้อมูลส่วนตัว
-                  </DropdownItem>
-                  <DropdownItem
-                    key="address"
-                    onClick={() => router.push("/address")}
-                  >
-                    จัดการที่อยู่
-                  </DropdownItem>
-                  {me?.role === 100 ? (
-                    <DropdownItem
-                      key="admin_page"
-                      onClick={() => router.push("/admin")}
-                    >
-                      จัดการหลังบ้าน
-                    </DropdownItem>
-                  ) : (
-                    <DropdownItem className="hidden"></DropdownItem>
-                  )}
                   <DropdownItem
                     key="logout-button"
                     color="danger"
                     onClick={() => {
                       logout_notify();
-                      deleteCookie("shopping-jwt");
+                      deleteCookie(jwt_token);
                       setIsLogin(false);
                       router.push("/");
                     }}
@@ -132,7 +92,7 @@ export default function Header({
                 </DropdownMenu>
               </Dropdown>
             ) : (
-              <Link href={isLogin ? "/profile" : "/signin"}>
+              <Link href={isLogin ? "/profile" : "/signin"} className="hidden">
                 <Avatar
                   isBordered={true}
                   showFallback={true}

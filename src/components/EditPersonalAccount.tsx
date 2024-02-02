@@ -1,7 +1,8 @@
 import client from "@/api/client";
 import { EyeFilledIcon } from "@/components/EyeFilledIcon";
 import { EyeSlashFilledIcon } from "@/components/EyeSlashFilledIcon";
-import { ProfileResponseDto } from "@/types/swagger.types";
+import { MeResponseDto } from "@/types/swagger.types";
+import { jwt_token } from "@/utils/config";
 import { useLogin } from "@/utils/login";
 import { Button, Input } from "@nextui-org/react";
 import { getCookie, setCookie } from "cookies-next";
@@ -12,10 +13,10 @@ export default function EditPersonalAccount({
   profile,
   className,
 }: {
-  profile: ProfileResponseDto;
+  profile: MeResponseDto;
   className?: string;
 }) {
-  const token = getCookie("shopping-jwt") as string | null;
+  const token = getCookie(jwt_token) as string | null;
   const [username, setUsername] = useState<string>(profile.username);
   const [editUsername, setEditUsername] = useState<boolean>(false);
   const [editPassword, setEditPassword] = useState<boolean>(false);
@@ -49,7 +50,7 @@ export default function EditPersonalAccount({
     setConfirmPasswordError("");
     setUpdateUsernameError("");
     client
-      .PATCH("/api/v1/users/{id}", {
+      .PATCH("/users/{id}", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -72,7 +73,7 @@ export default function EditPersonalAccount({
           setIsVisible(false);
           toast.success("อัพเดทชื่อผู้ใช้สำเร็จ", { position: "bottom-right" });
           login(username, confirmPassword).then((res) => {
-            setCookie("shopping-jwt", res.access_token, {
+            setCookie("jwt_token", res.access_token, {
               maxAge: 60 * 60 * 24 * 30,
               path: "/",
             });
@@ -82,7 +83,7 @@ export default function EditPersonalAccount({
           if (res.error?.message === "ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว") {
             setUpdateUsernameError(res.error?.message as string);
           }
-          if (res.error?.message === "รหัสผ่านไม่ถูกต้อง") {
+          if (res.error?.message === "รหัสผ่านเดิมไม่ถูกต้อง") {
             setConfirmPasswordError(res.error?.message as string);
           }
         }
@@ -115,7 +116,7 @@ export default function EditPersonalAccount({
     }
 
     client
-      .PATCH("/api/v1/users/{id}", {
+      .PATCH("/users/{id}", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -143,7 +144,7 @@ export default function EditPersonalAccount({
           setConfirmNewPasswordError("");
           toast.success("อัพเดทรหัสผ่านสำเร็จ", { position: "bottom-right" });
           login(username, newPassword).then((res) => {
-            setCookie("shopping-jwt", res.access_token, {
+            setCookie("jwt_token", res.access_token, {
               maxAge: 60 * 60 * 24 * 30,
               path: "/",
             });

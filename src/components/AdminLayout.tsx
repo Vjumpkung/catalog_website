@@ -1,4 +1,4 @@
-import { settingsSchema } from "@/types/swagger.types";
+import { GetSettingsDto } from "@/types/swagger.types";
 import AdminHeader from "./AdminHeader";
 import { createContext, useState } from "react";
 
@@ -14,7 +14,7 @@ export default function AdminLayout({
   settings,
 }: {
   children: React.ReactNode;
-  settings: settingsSchema;
+  settings: GetSettingsDto;
 }) {
   return (
     <>

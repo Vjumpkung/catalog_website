@@ -1,7 +1,8 @@
 import client from "@/api/client";
+import { jwt_token, register_secret } from "@/utils/config";
 import { EyeFilledIcon } from "@/components/EyeFilledIcon";
 import { EyeSlashFilledIcon } from "@/components/EyeSlashFilledIcon";
-import { settingsSchema } from "@/types/swagger.types";
+import { GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { useRegister } from "@/utils/register";
 import { Button, Image, Input } from "@nextui-org/react";
@@ -172,16 +173,20 @@ export default function SignUp({
   );
 }
 
-export async function getServerSideProps({ req, res }: { req: any; res: any }) {
+export async function getServerSideProps(ctx: any) {
   if (await apiCheck()) {
     return { redirect: { destination: "/500", permanent: false } };
   }
 
-  const { data } = await client.GET("/api/v1/settings");
+  if (ctx.query?.token !== register_secret) {
+    return { redirect: { destination: "/404", permanent: false } };
+  }
 
-  const settings = data as settingsSchema;
+  const { data } = await client.GET("/settings/");
 
-  const shopping_jwt = getCookie("shopping-jwt", { req, res }) as
+  const settings = data as GetSettingsDto;
+
+  const shopping_jwt = getCookie(jwt_token, { req: ctx.req, res: ctx.res }) as
     | string
     | undefined
     | null;

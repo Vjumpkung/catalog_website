@@ -5,174 +5,452 @@
 
 
 export interface paths {
-  "/api/v1/ping": {
-    get: operations["AppController_getPing"];
+  "/ping": {
+    /** @description Ping and Pong */
+    get: {
+      responses: {
+        /** @description Hello World message */
+        200: {
+          content: {
+            "application/json": components["schemas"]["IndexGetResponseDto"];
+          };
+        };
+      };
+    };
   };
-  "/api/v1/products": {
-    get: operations["ProductsController_getProducts"];
-    /** Require ADMIN */
-    post: operations["ProductsController_createProduct"];
+  "/products/": {
+    /** @description Endpoint to get all products. */
+    get: {
+      parameters: {
+        query: {
+          /** @description Status of the products */
+          status: "all" | "published";
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["ProductsAllResponseDto"];
+          };
+        };
+      };
+    };
+    /** @description Endpoint to create a product. */
+    post: {
+      /** @description Product object */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["ProductCreateDto"];
+          "application/xml": components["schemas"]["ProductCreateDto"];
+        };
+      };
+      responses: {
+        /** @description Product created successfully. */
+        201: {
+          content: {
+            "application/json": components["schemas"]["ProductResponseDto"];
+            "application/xml": components["schemas"]["ProductResponseDto"];
+          };
+        };
+        /** @description Invalid request body. */
+        400: {
+          content: {
+            "application/json": components["schemas"]["ErrorDto"];
+            "application/xml": components["schemas"]["ErrorDto"];
+          };
+        };
+      };
+    };
   };
-  "/api/v1/products/{id}": {
-    get: operations["ProductsController_getProductById"];
-    /** Require ADMIN */
-    delete: operations["ProductsController_deleteProduct"];
-    /** Require ADMIN */
-    patch: operations["ProductsController_updateProductAvailable"];
+  "/products/{id}": {
+    /** @description Endpoint to get a product by id. */
+    get: {
+      parameters: {
+        path: {
+          /** @description Product id */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["ProductResponseDto"];
+          };
+        };
+      };
+    };
+    /** @description Endpoint to delete a product. */
+    delete: {
+      parameters: {
+        path: {
+          /** @description Product id */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Product deleted successfully. */
+        204: {
+          content: never;
+        };
+        /** @description Bad Request */
+        400: {
+          content: never;
+        };
+      };
+    };
+    /** @description Endpoint to change the status of a product. */
+    patch: {
+      parameters: {
+        query: {
+          /** @description Status of the product */
+          status: false | true;
+        };
+        path: {
+          /** @description Product id */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Status changed successfully. */
+        204: {
+          content: never;
+        };
+        /** @description Bad Request */
+        400: {
+          content: never;
+        };
+      };
+    };
   };
-  "/api/v1/products/{id}/update": {
-    /** Require ADMIN */
-    patch: operations["ProductsController_updateProduct"];
+  "/products/{id}/update": {
+    /** @description Endpoint to update a product. */
+    patch: {
+      parameters: {
+        path: {
+          /** @description Product id */
+          id: string;
+        };
+      };
+      /** @description Product object */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["ProductUpdateDto"];
+          "application/xml": components["schemas"]["ProductUpdateDto"];
+        };
+      };
+      responses: {
+        /** @description Product updated successfully. */
+        204: {
+          content: never;
+        };
+        /** @description Bad Request */
+        400: {
+          content: never;
+        };
+      };
+    };
   };
-  "/api/v1/products/{id}/publish": {
-    /** Require ADMIN */
-    patch: operations["ProductsController_publishProduct"];
+  "/users/": {
+    /** @description Endpoint to create a new user */
+    get: {
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["UserResponseDto"];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          content: never;
+        };
+      };
+    };
+    /** @description Endpoint to create a new user */
+    post: {
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CreateUserDto"];
+          "application/xml": components["schemas"]["CreateUserDto"];
+        };
+      };
+      responses: {
+        /** @description User created */
+        204: {
+          content: never;
+        };
+        /** @description User already exists */
+        400: {
+          content: {
+            "application/json": components["schemas"]["ErrorDto"];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          content: never;
+        };
+      };
+    };
   };
-  "/api/v1/products/{id}/draft": {
-    /** Require ADMIN */
-    patch: operations["ProductsController_draftProduct"];
+  "/users/{id}": {
+    /** @description Endpoint to delete a user */
+    delete: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description User deleted */
+        204: {
+          content: never;
+        };
+        /** @description Unauthorized */
+        401: {
+          content: never;
+        };
+        /** @description User not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["ErrorDto"];
+          };
+        };
+      };
+    };
+    /** @description Endpoint to update a user */
+    patch: {
+      parameters: {
+        path: {
+          /** @description User ID */
+          id: string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateUserDto"];
+          "application/xml": components["schemas"]["UpdateUserDto"];
+        };
+      };
+      responses: {
+        /** @description User updated */
+        204: {
+          content: never;
+        };
+        /** @description Username already exists */
+        400: {
+          content: {
+            "application/json": components["schemas"]["ErrorDto"];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          content: never;
+        };
+      };
+    };
   };
-  "/api/v1/orders": {
-    /** Require ADMIN */
-    get: operations["OrdersController_getOrders"];
-    /** Require USER */
-    post: operations["OrdersController_createOrder"];
+  "/auth/login": {
+    /** @description Login */
+    post: {
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["LoginUserDto"];
+          "application/xml": components["schemas"]["LoginUserDto"];
+        };
+      };
+      responses: {
+        /** @description Login successful */
+        200: {
+          content: {
+            "application/json": components["schemas"]["LoginResponseDto"];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          content: {
+            "application/json": components["schemas"]["ErrorDto"];
+          };
+        };
+      };
+    };
   };
-  "/api/v1/orders/user": {
-    /** Require USER */
-    get: operations["OrdersController_getOrdersByUserId"];
+  "/auth/register": {
+    /** @description register admin */
+    post: {
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CreateUserDto"];
+          "application/xml": components["schemas"]["CreateUserDto"];
+        };
+      };
+      responses: {
+        /** @description Admin created */
+        204: {
+          content: never;
+        };
+        /** @description User already exists */
+        400: {
+          content: {
+            "application/json": components["schemas"]["ErrorDto"];
+          };
+        };
+      };
+    };
   };
-  "/api/v1/orders/{id}/must_be_paid": {
-    /** Require ADMIN */
-    patch: operations["OrdersController_orderMustBePaid"];
+  "/auth/me": {
+    /** @description Get user info */
+    get: {
+      responses: {
+        /** @description User info */
+        200: {
+          content: {
+            "application/json": components["schemas"]["MeResponseDto"];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          content: {
+            "application/json": components["schemas"]["ErrorDto"];
+          };
+        };
+      };
+    };
   };
-  "/api/v1/orders/{id}/must_be_shipped": {
-    /** Require ADMIN */
-    patch: operations["OrdersController_orderMustBeShipped"];
+  "/choices/": {
+    /** @description Endpoint to get all choices. */
+    get: {
+      responses: {
+        /** @description Choices retrieved successfully. */
+        200: {
+          content: {
+            "application/json": components["schemas"]["AllChoicesResponseDto"];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          content: never;
+        };
+      };
+    };
+    /** @description Endpoint to create a choice. */
+    post: {
+      /** @description Choice object */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CreateChoiceDto"];
+          "application/xml": components["schemas"]["CreateChoiceDto"];
+        };
+      };
+      responses: {
+        /** @description Choice created successfully. */
+        201: {
+          content: {
+            "application/json": components["schemas"]["ChoiceResponseDto"];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          content: never;
+        };
+      };
+    };
   };
-  "/api/v1/orders/{id}/must_be_recieved": {
-    /** Require ADMIN */
-    patch: operations["OrdersController_orderMustBeRecieved"];
+  "/choices/{id}": {
+    /** @description Endpoint to get choices by id. */
+    get: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Choices retrieved successfully. */
+        200: {
+          content: {
+            "application/json": components["schemas"]["ChoiceResponseDto"];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          content: never;
+        };
+      };
+    };
+    /** @description Delete Choice by id. */
+    delete: {
+      parameters: {
+        path: {
+          /** @description Choice ID. */
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Choices delete successfully. */
+        204: {
+          content: never;
+        };
+        /** @description Unauthorized */
+        401: {
+          content: never;
+        };
+      };
+    };
+    /** @description Update Choice by id. */
+    patch: {
+      parameters: {
+        path: {
+          /** @description Choice ID. */
+          id: string;
+        };
+      };
+      /** @description Choice object */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateChoiceDto"];
+          "application/xml": components["schemas"]["UpdateChoiceDto"];
+        };
+      };
+      responses: {
+        /** @description Choices update successfully. */
+        204: {
+          content: never;
+        };
+        /** @description Unauthorized */
+        401: {
+          content: never;
+        };
+      };
+    };
   };
-  "/api/v1/orders/{id}/completed": {
-    /** Require ADMIN */
-    patch: operations["OrdersController_orderCompleted"];
-  };
-  "/api/v1/orders/{id}/cancelled": {
-    /** Require ADMIN */
-    patch: operations["OrdersController_orderCancelled"];
-  };
-  "/api/v1/orders/{id}/refunded": {
-    /** Require ADMIN */
-    patch: operations["OrdersController_orderRefunded"];
-  };
-  "/api/v1/orders/{id}/edit": {
-    /** Require ADMIN */
-    patch: operations["OrdersController_editTracking"];
-  };
-  "/api/v1/orders/{id}": {
-    /** Require ADMIN */
-    delete: operations["OrdersController_deleteOrder"];
-  };
-  "/api/v1/shopping-cart/user": {
-    /** Require USER */
-    get: operations["ShoppingCartController_getCart"];
-  };
-  "/api/v1/shopping-cart/add": {
-    /** Require USER */
-    post: operations["ShoppingCartController_addToCart"];
-  };
-  "/api/v1/shopping-cart/update": {
-    /** Require USER */
-    patch: operations["ShoppingCartController_updateCart"];
-  };
-  "/api/v1/shopping-cart/remove": {
-    /** Require USER */
-    delete: operations["ShoppingCartController_removeFromCart"];
-  };
-  "/api/v1/shippings": {
-    get: operations["ShippingsController_getAllShippings"];
-  };
-  "/api/v1/users": {
-    /** Require ADMIN */
-    get: operations["UsersController_getUsers"];
-    /** Require ADMIN */
-    post: operations["UsersController_createUser"];
-  };
-  "/api/v1/users/{id}": {
-    /** Require ADMIN */
-    delete: operations["UsersController_deleteUser"];
-    /** Require USER */
-    patch: operations["UsersController_updateUserInfo"];
-  };
-  "/api/v1/users/{id}/admin": {
-    /** Require ADMIN */
-    patch: operations["UsersController_updateUserRoleToAdmin"];
-  };
-  "/api/v1/users/{id}/user": {
-    /** Require ADMIN */
-    patch: operations["UsersController_updateUserRoleToUser"];
-  };
-  "/api/v1/auth/register": {
-    post: operations["AuthController_register"];
-  };
-  "/api/v1/auth/login": {
-    post: operations["AuthController_login"];
-  };
-  "/api/v1/auth/profile": {
-    /** Require USER */
-    get: operations["AuthController_getProfile"];
-  };
-  "/api/v1/settings": {
-    get: operations["SettingsController_getSettings"];
-    /** Require ADMIN */
-    patch: operations["SettingsController_updateSettings"];
-  };
-  "/api/v1/choices": {
-    /** Require ADMIN */
-    get: operations["ChoicesController_getAllChoices"];
-    /** Require ADMIN */
-    post: operations["ChoicesController_createChoice"];
-  };
-  "/api/v1/choices/{id}": {
-    /** Require ADMIN */
-    get: operations["ChoicesController_getChoiceById"];
-    /** Require ADMIN */
-    delete: operations["ChoicesController_deleteChoice"];
-    /** Require ADMIN */
-    patch: operations["ChoicesController_updateChoice"];
-  };
-  "/api/v1/slips": {
-    /** Require ADMIN */
-    get: operations["SlipsController_getSlips"];
-    /** Require USER */
-    post: operations["SlipsController_createSlip"];
-  };
-  "/api/v1/slips/user": {
-    /** Require USER */
-    get: operations["SlipsController_getSlipById"];
-  };
-  "/api/v1/slips/{id}": {
-    /** Require ADMIN */
-    delete: operations["SlipsController_deleteSlip"];
-  };
-  "/api/v1/addresses": {
-    /** Requier USER */
-    get: operations["AddressesController_getAddresses"];
-    /** Requier USER */
-    post: operations["AddressesController_createAddress"];
-  };
-  "/api/v1/addresses/default": {
-    /** Requier USER */
-    get: operations["AddressesController_getDefaultAddress"];
-  };
-  "/api/v1/addresses/{id}": {
-    /** Requier USER */
-    get: operations["AddressesController_getAddressById"];
-    /** Requier USER */
-    delete: operations["AddressesController_deleteAddress"];
-    /** Requier USER */
-    patch: operations["AddressesController_updateAddress"];
+  "/settings/": {
+    /** @description Endpoint to get settings. */
+    get: {
+      responses: {
+        /** @description Settings retrieved successfully. */
+        200: {
+          content: {
+            "application/json": components["schemas"]["GetSettingsDto"];
+          };
+        };
+      };
+    };
+    /** @description Endpoint to update settings. */
+    patch: {
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateSettingsDto"];
+          "application/xml": components["schemas"]["UpdateSettingsDto"];
+        };
+      };
+      responses: {
+        /** @description Settings updated successfully. */
+        204: {
+          content: never;
+        };
+      };
+    };
   };
 }
 
@@ -180,466 +458,176 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    PingResponseDto: {
-      /** @example Pong! */
+    IndexGetResponseDto: {
+      /** @example pong */
       msg: string;
     };
-    choiceSchema: {
-      /** @description choice id */
-      _id: string;
-      /** @description choice name */
-      name: string;
-      /** @description choice price */
-      price: number;
-    };
-    ProductsAllResponseDto: {
-      /** @description product id */
-      _id: string;
-      /** @description product name */
-      name: string;
-      /**
-       * @description choices of product
-       * @default []
-       */
-      choices: components["schemas"]["choiceSchema"][];
-      /**
-       * @description product image
-       * @default []
-       */
-      image: string[];
-      /** @description product price */
-      price: number;
-      /** @description product availability */
-      isAvailable: boolean;
-      /**
-       * Format: date-time
-       * @description product published date
-       */
-      published_at: string;
-      /**
-       * Format: date-time
-       * @description product deleted date
-       */
-      deleted_at: string;
-    };
-    ProductsResponseDto: {
-      /** @description product id */
-      _id: string;
-      /** @description product name */
-      name: string;
-      /** @description product description */
-      description: string;
-      /**
-       * @description choices of product
-       * @default []
-       */
-      choices: components["schemas"]["choiceSchema"][];
-      /**
-       * @description product image
-       * @default []
-       */
-      image: string[];
-      /** @description product price */
-      price: number;
-      /** @description product availability */
-      isAvailable: boolean;
-      /**
-       * Format: date-time
-       * @description product published date
-       */
-      published_at: string | null;
-      /**
-       * Format: date-time
-       * @description product deleted date
-       */
-      deleted_at: string | null;
-    };
-    ProductCreateDto: {
-      /** @description Product name */
-      name: string;
-      /** @description Product description */
-      description?: string;
-      /** @description Product choices */
-      choices?: string[];
-      /** @description Product image */
-      image?: string[];
-      /** @description Product price */
-      price?: number;
-      /**
-       * Format: date-time
-       * @description Product published date
-       */
-      published_at?: string;
-    };
-    productSchema: {
-      /** @description product id */
-      _id: string;
-      /** @description product name */
-      name: string;
-      /** @description product description */
-      description: string;
-      /**
-       * @description product choices
-       * @default []
-       */
-      choices: string[];
-      /**
-       * @description product image
-       * @default []
-       */
-      image: string[];
-      /** @description product price */
-      price: number;
-      /** @description product availability */
-      isAvailable: boolean;
-      /**
-       * Format: date-time
-       * @description product published date
-       */
-      published_at: string;
-      /**
-       * Format: date-time
-       * @description product deleted date
-       */
-      deleted_at: string;
-    };
-    ProductUpdateDto: {
-      /** @description Product name */
-      name?: string;
-      /** @description Product description */
-      description?: string;
-      /** @description Product choices */
-      choices?: string[];
-      /** @description Product image */
-      image?: string[];
-      /** @description Product price */
-      price?: number;
-    };
-    addressSchema: {
-      /** @description address id */
-      _id: string;
-      /** @description user id */
-      user: string;
-      /** @description title */
-      title: string;
-      /** @description address */
-      address: string;
-      /** @description telephone number */
-      telephone: string;
-      /** @description set as default address */
-      default: boolean;
-      /**
-       * Format: date-time
-       * @description address created date
-       */
-      created_at: string;
-      /**
-       * Format: date-time
-       * @description address deleted date
-       */
-      deleted_at: string;
-    };
-    CartResponseDto: {
-      /** @description shopping cart id */
-      _id: string;
-      /** @description user id */
-      user: string;
-      /** @description additional info */
-      additional_info: string;
-      /** @description Product id */
-      product: components["schemas"]["productSchema"];
-      /** @description choice id */
-      choice: components["schemas"]["choiceSchema"];
-      /** @description amount */
-      amount: number;
-      /** @description total price */
-      total_price: number;
-      /** @description is ordered */
-      is_ordered: boolean;
-      /**
-       * Format: date-time
-       * @description product cart removed
-       */
-      deleted_at: string;
-    };
-    shippingSchema: {
-      /** @description shipping id */
-      _id: string;
-      /** @description shipping provider */
-      provider: string;
-      /** @description shipping tracking number */
-      tracking_number: string;
-      /** @description shipping tracking url */
-      tracking_url: string;
-    };
-    orderSchema: {
-      /** @description order id */
-      _id: string;
-      /** @description user id */
-      user: string;
-      /** @description address id */
-      address: components["schemas"]["addressSchema"];
-      /** @description array of shopping cart id */
-      shopping_cart: components["schemas"]["CartResponseDto"][];
-      /** @description total price */
-      total_price: number;
-      /**
-       * @description Order status
-       * @enum {string}
-       */
-      status: "MUST_BE_PAID" | "MUST_BE_SHIPPED" | "MUST_BE_RECEIVED" | "COMPLETED" | "CANCELLED" | "REFUNDED";
-      /** @description additional info */
-      additional_info: string;
-      /** @description shipping id */
-      shipping: components["schemas"]["shippingSchema"] | null;
-      /**
-       * Format: date-time
-       * @description order created date
-       */
-      created_at: string;
-      /**
-       * Format: date-time
-       * @description order cancelled date
-       */
-      cancelled_at: string | null;
-      /** @description cancelled reason */
-      cancelled_reason: string | null;
-      /**
-       * Format: date-time
-       * @description order deleted date
-       */
-      deleted_at: string | null;
-    };
-    OrdersByUserIdResponseDto: {
-      /** @description order id */
-      _id: string;
-      /** @description user id */
-      user: string;
-      /** @description address */
-      address: components["schemas"]["addressSchema"];
-      /** @description additional info */
-      additional_info: string;
-      /** @description array of shopping cart id */
-      shopping_cart: components["schemas"]["CartResponseDto"][];
-      /** @description total price */
-      total_price: number;
-      /**
-       * @description Order status
-       * @enum {string}
-       */
-      status: "MUST_BE_PAID" | "MUST_BE_SHIPPED" | "MUST_BE_RECEIVED" | "COMPLETED" | "CANCELLED" | "REFUNDED";
-      /** @description shipping id */
-      shipping: components["schemas"]["shippingSchema"] | null;
-      /**
-       * Format: date-time
-       * @description order created date
-       */
-      created_at: string;
-      /**
-       * Format: date-time
-       * @description order cancelled date
-       */
-      cancelled_at: string | null;
-      /** @description cancelled reason */
-      cancelled_reason: string | null;
-      /**
-       * Format: date-time
-       * @description order deleted date
-       */
-      deleted_at: string | null;
-    };
-    CreateOrderDto: {
-      /** @description shopping cart id */
-      shopping_cart: string[];
-      /** @description additional info */
-      additional_info?: string;
-      /** @description address id */
-      address: string;
-    };
-    ShippingCreateDto: {
-      /** @description shipping provider */
-      provider: string;
-      /** @description shipping tracking number */
-      tracking_number: string;
-      /** @description shipping tracking url */
-      tracking_url?: string;
-    };
-    CancelledOrderDto: {
-      /** @description Order cancelled reason */
-      cancelled_reason: string;
-    };
-    AddToCartDto: {
-      /** @description Product ID */
-      product: string;
-      /** @description Product choice ID */
-      choice?: string;
-      /** @description Amount of product */
-      amount: number;
-      /** @description additional info */
-      additional_info?: string;
-    };
-    UpdateToCartDto: {
-      /** @description Product choice ID */
-      choice?: string;
-      /** @description Amount of product */
-      amount?: number;
-    };
-    userSchema: {
-      /** @description user id */
-      _id: string;
-      /** @description username */
+    CreateUserDto: {
+      /** @example string */
       username: string;
-      /** @description password */
+      /** @example string */
       password: string;
-      /**
-       * @description user role
-       * @enum {number}
-       */
-      role: 100 | 1;
-      /**
-       * Format: date-time
-       * @description user created at
-       */
-      created_at: string;
-      /**
-       * Format: date-time
-       * @description user deleted date
-       */
-      deleted_at: string;
     };
-    UserCreateDto: {
-      /** @description Username */
-      username: string;
-      /** @description Password */
-      password: string;
-      /** @description Role */
-      role: number;
-    };
-    UpdateInfoDto: {
-      /** @description New Username */
-      newUsername?: string;
-      /** @description Old Password */
-      oldPassword: string;
-      /** @description New Password */
-      newPassword?: string;
-    };
+    UserResponseDto: {
+        /** @example string */
+        id: string;
+        /** @example string */
+        username: string;
+        /** @example string */
+        created_at: string;
+      }[];
     ErrorDto: {
-      /** @description error message */
+      /** @example string */
       message: string;
     };
-    RegisterDto: {
-      /** @description Username */
+    LoginUserDto: {
+      /** @example string */
       username: string;
-      /** @description Password */
-      password: string;
-    };
-    RegisterResponseDto: {
-      /** @description id */
-      _id: string;
-      /** @description username */
-      username: string;
-      /**
-       * @description role
-       * @enum {number}
-       */
-      role: 100 | 1;
-    };
-    LoginDto: {
-      /** @description Username */
-      username: string;
-      /** @description Password */
+      /** @example string */
       password: string;
     };
     LoginResponseDto: {
-      /** @description access_token */
+      /** @example string */
       access_token: string;
     };
-    ProfileResponseDto: {
-      /** @description id */
+    UpdateUserDto: {
+      /** @example string */
+      newUsername?: string;
+      /** @example string */
+      oldPassword: string;
+      /** @example string */
+      newPassword?: string;
+    };
+    MeResponseDto: {
+      /** @example string */
       id: string;
-      /** @description username */
+      /** @example string */
       username: string;
-      /**
-       * @description role
-       * @enum {number}
-       */
-      role: 100 | 1;
+      /** @example string */
+      created_at: string;
     };
-    settingsSchema: {
-      /** @description settings id */
-      _id: string;
-      /** @description shop name */
+    ProductsAllResponseDto: {
+        /** @example string */
+        id: string;
+        /** @example string */
+        name: string;
+        choices: components["schemas"]["ChoiceResponseDto"][];
+        /**
+         * @example [
+         *   "string"
+         * ]
+         */
+        images: string[];
+        /** @example 10 */
+        price: number;
+        /** @example string */
+        published_at: string;
+      }[];
+    ProductCreateDto: {
+      /** @example string */
       name: string;
-      /** @description shop logo */
-      logo: string;
+      /** @example 0 */
+      price?: number;
+      /** @example string */
+      description?: string;
+      /**
+       * @example [
+       *   "string"
+       * ]
+       */
+      choices?: string[];
+      /**
+       * @example [
+       *   "string"
+       * ]
+       */
+      images?: string[];
+      /** @example string */
+      published_at?: string;
     };
-    SettingsUpdateDto: {
-      /** @description name of the shop */
-      name?: string;
-      /** @description logo image url of the shop */
-      logo?: string;
+    ProductResponseDto: {
+      /** @example string */
+      id: string;
+      /** @example string */
+      name: string;
+      /** @example string */
+      description: string;
+      choices: components["schemas"]["ChoiceResponseDto"][];
+      /**
+       * @example [
+       *   "string"
+       * ]
+       */
+      images: string[];
+      /** @example 10 */
+      price: number;
+      /** @example string */
+      published_at: string;
     };
     CreateChoiceDto: {
-      /** @description choice name */
+      /** @example string */
       name: string;
-      /** @description choice price */
+      /** @example 0 */
       price: number;
     };
+    ChoiceResponseDto: {
+      /** @example string */
+      id: string;
+      /** @example choice */
+      name: string;
+      /** @example 0 */
+      price: number;
+      /** @example 2021-08-08T00:00:00.000Z */
+      created_at: string;
+    };
     UpdateChoiceDto: {
-      /** @description choice name */
+      /** @example string */
       name?: string;
-      /** @description choice price */
+      /** @example 0 */
       price?: number;
     };
-    slipSchema: {
-      /** @description slip id */
-      _id: string;
-      /** @description orders id */
-      orders: string;
-      /** @description user id */
-      user: string;
-      /** @description transfer slip image */
-      image: string;
-      /** @description additional info */
-      additional_info: string;
+    ProductUpdateDto: {
+      /** @example string */
+      name?: string;
+      /** @example string */
+      description?: string;
       /**
-       * Format: date-time
-       * @description transfer date
+       * @example [
+       *   "string"
+       * ]
        */
-      transfer_date: string;
+      choices?: string[];
       /**
-       * Format: date-time
-       * @description deleted at
+       * @example [
+       *   "string"
+       * ]
        */
-      deleted_at: string;
+      images?: string[];
+      /** @example 0 */
+      price?: number;
     };
-    CreateSlipDto: {
-      orders: string[];
-      image: string;
-      additional_info?: string;
-      /** Format: date-time */
-      transfer_date: string;
+    UpdateSettingsDto: {
+      /** @example string */
+      name?: string;
+      /** @example string */
+      logo?: string;
     };
-    AddressCreateDto: {
-      /** @description title */
-      title: string;
-      /** @description address */
-      address: string;
-      /** @description telephone number */
-      telephone: string;
-      /** @description set as default address */
-      default?: boolean;
+    GetSettingsDto: {
+      /** @example string */
+      name: string;
+      /** @example string */
+      logo: string;
     };
-    AddressUpdateDto: {
-      /** @description title */
-      title?: string;
-      /** @description address */
-      address?: string;
-      /** @description telephone number */
-      telephone?: string;
-      /** @description set as default address */
-      default?: boolean;
-    };
+    AllChoicesResponseDto: {
+        /** @example string */
+        id: string;
+        /** @example choice */
+        name: string;
+        /** @example 0 */
+        price: number;
+        /** @example 2021-08-08T00:00:00.000Z */
+        created_at: string;
+      }[];
   };
   responses: never;
   parameters: never;
@@ -652,742 +640,4 @@ export type $defs = Record<string, never>;
 
 export type external = Record<string, never>;
 
-export interface operations {
-
-  AppController_getPing: {
-    responses: {
-      /** @description Pong! */
-      200: {
-        content: {
-          "application/json": components["schemas"]["PingResponseDto"];
-        };
-      };
-    };
-  };
-  ProductsController_getProducts: {
-    parameters: {
-      query: {
-        status: "all" | "publish";
-      };
-    };
-    responses: {
-      default: {
-        content: {
-          "application/json": components["schemas"]["ProductsAllResponseDto"][];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  ProductsController_createProduct: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ProductCreateDto"];
-      };
-    };
-    responses: {
-      201: {
-        content: {
-          "application/json": components["schemas"]["productSchema"];
-        };
-      };
-    };
-  };
-  ProductsController_getProductById: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      default: {
-        content: {
-          "application/json": components["schemas"]["ProductsResponseDto"];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  ProductsController_deleteProduct: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description delete product */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  ProductsController_updateProductAvailable: {
-    parameters: {
-      query: {
-        available: boolean;
-      };
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description update product status */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  ProductsController_updateProduct: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ProductUpdateDto"];
-      };
-    };
-    responses: {
-      /** @description update product */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  ProductsController_publishProduct: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description publish product */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  ProductsController_draftProduct: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description draft product */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  OrdersController_getOrders: {
-    responses: {
-      /** @description Get all orders */
-      200: {
-        content: {
-          "application/json": components["schemas"]["orderSchema"][];
-        };
-      };
-    };
-  };
-  /** Require USER */
-  OrdersController_createOrder: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateOrderDto"];
-      };
-    };
-    responses: {
-      /** @description Create order */
-      201: {
-        content: {
-          "application/json": components["schemas"]["orderSchema"];
-        };
-      };
-    };
-  };
-  /** Require USER */
-  OrdersController_getOrdersByUserId: {
-    responses: {
-      /** @description Get order by user id */
-      200: {
-        content: {
-          "application/json": components["schemas"]["OrdersByUserIdResponseDto"][];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  OrdersController_orderMustBePaid: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description Update order status to MUST_BE_PAID */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  OrdersController_orderMustBeShipped: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description Update order status to MUST_BE_SHIPPED */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  OrdersController_orderMustBeRecieved: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ShippingCreateDto"];
-      };
-    };
-    responses: {
-      /** @description Update order status to MUST_BE_RECIEVED */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  OrdersController_orderCompleted: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description Update order status to COMPLETED */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  OrdersController_orderCancelled: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CancelledOrderDto"];
-      };
-    };
-    responses: {
-      /** @description Update order status to CANCELLED */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  OrdersController_orderRefunded: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description Update order status to REFUNDED */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  OrdersController_editTracking: {
-    parameters: {
-      query: {
-        /** @description shipping id */
-        shipping_id: string;
-      };
-      path: {
-        /** @description order id */
-        id: string;
-      };
-    };
-    responses: {
-      /** @description edit shipping id */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  OrdersController_deleteOrder: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description DELETE order */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require USER */
-  ShoppingCartController_getCart: {
-    responses: {
-      /** @description Get cart by user id */
-      200: {
-        content: {
-          "application/json": components["schemas"]["CartResponseDto"][];
-        };
-      };
-    };
-  };
-  /** Require USER */
-  ShoppingCartController_addToCart: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["AddToCartDto"];
-      };
-    };
-    responses: {
-      /** @description Product added to cart */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require USER */
-  ShoppingCartController_updateCart: {
-    parameters: {
-      query: {
-        /** @description Cart ID */
-        cart_id: string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UpdateToCartDto"];
-      };
-    };
-    responses: {
-      /** @description Cart updated */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require USER */
-  ShoppingCartController_removeFromCart: {
-    parameters: {
-      query: {
-        /** @description Cart ID */
-        cart_id: string;
-      };
-    };
-    responses: {
-      /** @description Product removed from cart */
-      204: {
-        content: never;
-      };
-    };
-  };
-  ShippingsController_getAllShippings: {
-    responses: {
-      200: {
-        content: {
-          "application/json": components["schemas"]["shippingSchema"][];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  UsersController_getUsers: {
-    responses: {
-      /** @description get users */
-      200: {
-        content: {
-          "application/json": components["schemas"]["userSchema"][];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  UsersController_createUser: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UserCreateDto"];
-      };
-    };
-    responses: {
-      /** @description create user */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  UsersController_deleteUser: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description delete user */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require USER */
-  UsersController_updateUserInfo: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UpdateInfoDto"];
-      };
-    };
-    responses: {
-      /** @description update user info */
-      204: {
-        content: never;
-      };
-      400: {
-        content: {
-          "application/json": components["schemas"]["ErrorDto"];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  UsersController_updateUserRoleToAdmin: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description update user role to admin */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  UsersController_updateUserRoleToUser: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description update user role to user */
-      204: {
-        content: never;
-      };
-    };
-  };
-  AuthController_register: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["RegisterDto"];
-      };
-    };
-    responses: {
-      /** @description User registration */
-      201: {
-        content: {
-          "application/json": components["schemas"]["RegisterResponseDto"];
-        };
-      };
-    };
-  };
-  AuthController_login: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["LoginDto"];
-      };
-    };
-    responses: {
-      /** @description User login */
-      200: {
-        content: {
-          "application/json": components["schemas"]["LoginResponseDto"];
-        };
-      };
-    };
-  };
-  /** Require USER */
-  AuthController_getProfile: {
-    responses: {
-      /** @description get profile */
-      200: {
-        content: {
-          "application/json": components["schemas"]["ProfileResponseDto"];
-        };
-      };
-    };
-  };
-  SettingsController_getSettings: {
-    responses: {
-      /** @description get settings */
-      200: {
-        content: {
-          "application/json": components["schemas"]["settingsSchema"];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  SettingsController_updateSettings: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["SettingsUpdateDto"];
-      };
-    };
-    responses: {
-      /** @description update settings */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  ChoicesController_getAllChoices: {
-    responses: {
-      /** @description Get all choices */
-      200: {
-        content: {
-          "application/json": components["schemas"]["choiceSchema"][];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  ChoicesController_createChoice: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateChoiceDto"];
-      };
-    };
-    responses: {
-      /** @description Create choices */
-      201: {
-        content: {
-          "application/json": components["schemas"]["choiceSchema"];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  ChoicesController_getChoiceById: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description Get choice by id */
-      200: {
-        content: {
-          "application/json": components["schemas"]["choiceSchema"];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  ChoicesController_deleteChoice: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description Update choice */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  ChoicesController_updateChoice: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UpdateChoiceDto"];
-      };
-    };
-    responses: {
-      /** @description Update choice */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Require ADMIN */
-  SlipsController_getSlips: {
-    responses: {
-      200: {
-        content: {
-          "application/json": components["schemas"]["slipSchema"][];
-        };
-      };
-    };
-  };
-  /** Require USER */
-  SlipsController_createSlip: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateSlipDto"];
-      };
-    };
-    responses: {
-      201: {
-        content: {
-          "application/json": components["schemas"]["slipSchema"];
-        };
-      };
-    };
-  };
-  /** Require USER */
-  SlipsController_getSlipById: {
-    responses: {
-      200: {
-        content: {
-          "application/json": components["schemas"]["slipSchema"][];
-        };
-      };
-    };
-  };
-  /** Require ADMIN */
-  SlipsController_deleteSlip: {
-    parameters: {
-      path: {
-        id: string;
-      };
-    };
-    responses: {
-      /** @description delete slip */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Requier USER */
-  AddressesController_getAddresses: {
-    responses: {
-      /** @description Get addresses */
-      200: {
-        content: {
-          "application/json": components["schemas"]["addressSchema"][];
-        };
-      };
-    };
-  };
-  /** Requier USER */
-  AddressesController_createAddress: {
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["AddressCreateDto"];
-      };
-    };
-    responses: {
-      /** @description address created */
-      201: {
-        content: {
-          "application/json": components["schemas"]["addressSchema"];
-        };
-      };
-    };
-  };
-  /** Requier USER */
-  AddressesController_getDefaultAddress: {
-    responses: {
-      /** @description Get addresses */
-      200: {
-        content: {
-          "application/json": components["schemas"]["addressSchema"];
-        };
-      };
-    };
-  };
-  /** Requier USER */
-  AddressesController_getAddressById: {
-    parameters: {
-      path: {
-        /** @description address id */
-        id: string;
-      };
-    };
-    responses: {
-      /** @description Get address by id */
-      200: {
-        content: {
-          "application/json": components["schemas"]["addressSchema"];
-        };
-      };
-    };
-  };
-  /** Requier USER */
-  AddressesController_deleteAddress: {
-    parameters: {
-      path: {
-        /** @description address id */
-        id: string;
-      };
-    };
-    responses: {
-      /** @description address deleted */
-      204: {
-        content: never;
-      };
-    };
-  };
-  /** Requier USER */
-  AddressesController_updateAddress: {
-    parameters: {
-      path: {
-        /** @description address id */
-        id: string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["AddressUpdateDto"];
-      };
-    };
-    responses: {
-      /** @description address updated */
-      204: {
-        content: never;
-      };
-    };
-  };
-}
+export type operations = Record<string, never>;

@@ -1,8 +1,9 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 
 export default function apiCheck(): Promise<boolean> {
   let x = client
-    .GET("/api/v1/ping")
+    .GET("/ping")
     .then((res) => {
       return false;
     })

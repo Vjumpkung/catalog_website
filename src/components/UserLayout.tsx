@@ -1,4 +1,4 @@
-import { ProfileResponseDto, settingsSchema } from "@/types/swagger.types";
+import { MeResponseDto, GetSettingsDto } from "@/types/swagger.types";
 import Footer from "./Footer";
 import Header from "./Header";
 
@@ -8,8 +8,8 @@ export default function UserLayout({
   profile,
 }: {
   children: React.ReactNode;
-  settings: settingsSchema;
-  profile: ProfileResponseDto | null | undefined;
+  settings: GetSettingsDto;
+  profile: MeResponseDto | null | undefined;
 }) {
   return (
     <>

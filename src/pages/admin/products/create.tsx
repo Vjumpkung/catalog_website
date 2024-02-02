@@ -1,7 +1,8 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import AdminLayout from "@/components/AdminLayout";
 import ProductForm from "@/components/ProductForm";
-import { ProductCreateDto, settingsSchema } from "@/types/swagger.types";
+import { ProductCreateDto, GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { getProfile } from "@/utils/profile";
 import { Button } from "@nextui-org/react";
@@ -17,7 +18,7 @@ export default function CreateProduct({
 }: InferGetStaticPropsType<typeof getServerSideProps>) {
   const router = useRouter();
 
-  const token = getCookie("shopping-jwt") as string | null;
+  const token = getCookie(jwt_token) as string | null;
 
   const [published_at, setPublishedAt] = useState(false);
 
@@ -26,7 +27,7 @@ export default function CreateProduct({
     description: "",
     price: 0,
     choices: [],
-    image: [],
+    images: [],
   });
 
   function onSave() {
@@ -35,7 +36,7 @@ export default function CreateProduct({
       return;
     }
 
-    client.POST("/api/v1/products", {
+    client.POST("/products/", {
       headers: {
         authorization: `Bearer ${token}`,
       },
@@ -44,7 +45,7 @@ export default function CreateProduct({
         description: create_product?.description,
         price: create_product?.price,
         choices: create_product?.choices,
-        image: create_product?.image,
+        images: create_product?.images,
         published_at: published_at ? new Date().toISOString() : undefined,
       },
     });
@@ -94,24 +95,16 @@ export async function getServerSideProps(ctx: any) {
   if (await apiCheck()) {
     return { redirect: { destination: "/500", permanent: false } };
   }
-  const { data } = await client.GET("/api/v1/settings");
+  const { data } = await client.GET("/settings/");
 
-  const settings = data as settingsSchema;
+  const settings = data as GetSettingsDto;
 
-  const shopping_jwt = getCookie("shopping-jwt", {
+  const shopping_jwt = getCookie(jwt_token, {
     req: ctx.req,
     res: ctx.res,
   }) as string | null;
 
-  const profile = await getProfile(shopping_jwt);
-
   if (shopping_jwt) {
-    if (profile?.role !== 100) {
-      return {
-        notFound: true,
-      };
-    }
-
     return {
       props: {
         settings,

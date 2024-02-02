@@ -1,4 +1,4 @@
-import { settingsSchema } from "@/types/swagger.types";
+import { GetSettingsDto } from "@/types/swagger.types";
 import { Listbox, ListboxItem } from "@nextui-org/react";
 import { deleteCookie } from "cookies-next";
 import Image from "next/image";
@@ -17,11 +17,12 @@ import {
   Shop,
 } from "react-bootstrap-icons";
 import { AdminMenuContext } from "./AdminLayout";
+import { jwt_token } from "@/utils/config";
 
 export default function AdminHeader({
   settings,
 }: {
-  settings: settingsSchema;
+  settings: GetSettingsDto;
 }) {
   const { isOpen, setIsOpen } = useContext(AdminMenuContext);
 
@@ -62,7 +63,7 @@ export default function AdminHeader({
             if (item !== "logout") {
               router.push(`/admin/${item}`);
             } else {
-              deleteCookie("shopping-jwt");
+              deleteCookie(jwt_token);
               router.push(`/signin`);
             }
           }}
@@ -84,13 +85,6 @@ export default function AdminHeader({
             key="choices"
           >
             จัดการตัวเลือกสินค้า
-          </ListboxItem>
-          <ListboxItem
-            className={`${adminPath === "orders" && " bg-gray-200 text-black"}`}
-            startContent={<Shop />}
-            key="orders"
-          >
-            จัดการออเดอร์
           </ListboxItem>
           <ListboxItem
             className={`${
@@ -139,6 +133,7 @@ export default function AdminHeader({
                 height={32}
                 alt="logo"
                 className="aspect-square object-cover"
+                quality={100}
               />
             </div>
           </div>
@@ -154,7 +149,7 @@ export default function AdminHeader({
             if (item !== "logout") {
               router.push(`/admin/${item}`);
             } else {
-              deleteCookie("shopping-jwt");
+              deleteCookie(jwt_token);
               router.push(`/signin`);
             }
           }}
@@ -174,12 +169,6 @@ export default function AdminHeader({
             startContent={<CheckCircle />}
             key="choices"
             title="choices"
-          />
-          <ListboxItem
-            className={`${adminPath === "orders" && " bg-gray-200 text-black"}`}
-            startContent={<Shop />}
-            key="orders"
-            title="orders"
           />
           <ListboxItem
             className={`${

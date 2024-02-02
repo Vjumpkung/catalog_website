@@ -1,11 +1,12 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import AdminLayout from "@/components/AdminLayout";
 import { EyeFilledIcon } from "@/components/EyeFilledIcon";
 import { EyeSlashFilledIcon } from "@/components/EyeSlashFilledIcon";
 import {
-  UserCreateDto,
-  settingsSchema,
-  userSchama,
+  CreateUserDto,
+  GetSettingsDto,
+  UserResponseDto,
 } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { getProfile } from "@/utils/profile";
@@ -41,15 +42,14 @@ export default function ManageAccounts({
   profile,
   allUsers,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const token = getCookie("shopping-jwt");
-  const [users, setUsers] = useState<userSchama[]>(allUsers);
+  const token = getCookie(jwt_token);
+  const [users, setUsers] = useState<UserResponseDto>(allUsers);
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [selectRole, setSelectRole] = useState<string>("");
   const [isEditRoleOpen, setIsEditRoleOpen] = useState<boolean>(false);
-  const [createUser, setCreateUser] = useState<UserCreateDto>({
+  const [createUser, setCreateUser] = useState<CreateUserDto>({
     username: "",
     password: "",
-    role: 1,
   });
   const [isUsernameError, setIsUsernameError] = useState<string>("");
   const [isPasswordError, setIsPasswordError] = useState<string>("");
@@ -58,7 +58,7 @@ export default function ManageAccounts({
 
   function onDelete(id: string) {
     client
-      .DELETE("/api/v1/users/{id}", {
+      .DELETE("/users/{id}", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -70,13 +70,13 @@ export default function ManageAccounts({
       })
       .then(() => {
         client
-          .GET("/api/v1/users", {
+          .GET("/users/", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           })
           .then((res) => {
-            setUsers(res.data as userSchama[]);
+            setUsers(res.data as UserResponseDto);
           });
         toast.success("ลบบัญชีผู้ใช้เรียบร้อยแล้ว", {
           position: "bottom-right",
@@ -89,40 +89,7 @@ export default function ManageAccounts({
       });
   }
 
-  function onSave(id: string, role: number) {
-    client
-      .PATCH(`/api/v1/users/{id}/${role === 100 ? "admin" : "user"}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          path: {
-            id: id,
-          },
-        },
-      })
-      .then(() => {
-        client
-          .GET("/api/v1/users", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
-          .then((res) => {
-            setUsers(res.data as userSchama[]);
-          });
-        toast.success("บันทึกข้อมูลเรียบร้อยแล้ว", {
-          position: "bottom-right",
-        });
-      })
-      .catch(() => {
-        toast.error("เกิดข้อผิดพลาดบางอย่าง", {
-          position: "bottom-right",
-        });
-      });
-  }
-
-  function onCreate(createUserDto: UserCreateDto) {
+  function onCreate(createUserDto: CreateUserDto) {
     if (createUserDto.username === "") {
       setIsUsernameError("กรุณากรอกชื่อผู้ใช้");
       return;
@@ -136,7 +103,7 @@ export default function ManageAccounts({
       setIsPasswordError("");
     }
     client
-      .POST("/api/v1/users", {
+      .POST("/users/", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -149,13 +116,13 @@ export default function ManageAccounts({
         }
         if (res.response.status === 204) {
           client
-            .GET("/api/v1/users", {
+            .GET("/users/", {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             })
             .then((res) => {
-              setUsers(res.data as userSchama[]);
+              setUsers(res.data as UserResponseDto);
             });
           toast.success("เพิ่มผู้ใช้เรียบร้อยแล้ว", {
             position: "bottom-right",
@@ -190,7 +157,6 @@ export default function ManageAccounts({
                 setCreateUser({
                   username: "",
                   password: "",
-                  role: 1,
                 });
               }}
             >
@@ -246,31 +212,6 @@ export default function ManageAccounts({
                           </button>
                         }
                       />
-                      <p>ตำแหน่ง</p>
-                      <RadioGroup value={createUser.role.toString()}>
-                        <Radio
-                          value="1"
-                          onClick={() => {
-                            setCreateUser({
-                              ...createUser,
-                              role: 1,
-                            });
-                          }}
-                        >
-                          User
-                        </Radio>
-                        <Radio
-                          value="100"
-                          onClick={() => {
-                            setCreateUser({
-                              ...createUser,
-                              role: 100,
-                            });
-                          }}
-                        >
-                          Admin
-                        </Radio>
-                      </RadioGroup>
                     </ModalBody>
                     <ModalFooter>
                       <Button
@@ -281,7 +222,6 @@ export default function ManageAccounts({
                           setCreateUser({
                             username: "",
                             password: "",
-                            role: 1,
                           });
                         }}
                       >
@@ -306,35 +246,19 @@ export default function ManageAccounts({
           <Table aria-label="all products">
             <TableHeader>
               <TableColumn>ชื่อผู้ใช้</TableColumn>
-              <TableColumn>ประเภท</TableColumn>
-              <TableColumn>แก้ไข</TableColumn>
               <TableColumn>ลบ</TableColumn>
             </TableHeader>
             <TableBody>
               {users.map((user) => {
-                if (user._id === profile.id) {
+                if (user.id === profile?.id) {
                   return (
-                    <TableRow key={user._id}>
+                    <TableRow key={user.id}>
                       <TableCell>{user.username}</TableCell>
-                      <TableCell>
-                        {user.role === 100 ? "Admin" : "User"}
-                      </TableCell>
-                      <TableCell width={20}>
-                        <button disabled={user._id === profile.id}>
-                          <PencilSquare
-                            className={`mt-1 ${
-                              user._id === profile.id
-                                ? "text-gray-300"
-                                : "text-gray-500"
-                            }`}
-                          />
-                        </button>
-                      </TableCell>
-                      <TableCell width={20}>
-                        <button disabled={user._id === profile.id}>
+                      <TableCell width={100}>
+                        <button disabled={user.id === profile.id}>
                           <TrashFill
                             className={`mt-1 ${
-                              user._id === profile.id
+                              user.id === profile.id
                                 ? "text-red-300"
                                 : "text-red-500"
                             }`}
@@ -345,93 +269,15 @@ export default function ManageAccounts({
                   );
                 } else {
                   return (
-                    <TableRow key={user._id}>
+                    <TableRow key={user.id}>
                       <TableCell>{user.username}</TableCell>
-                      <TableCell>
-                        {user.role === 100 ? "Admin" : "User"}
-                      </TableCell>
-                      <TableCell width={20}>
-                        <Popover
-                          placement="bottom-end"
-                          color="default"
-                          isOpen={user._id === selectedUser && isEditRoleOpen}
-                          onOpenChange={(open) => {
-                            setIsEditRoleOpen(open);
-                          }}
-                          onClose={() => {
-                            setSelectedUser("");
-                            setIsEditRoleOpen(false);
-                          }}
-                        >
-                          <PopoverTrigger>
-                            <button
-                              disabled={user._id === profile.id}
-                              onClick={() => {
-                                setSelectedUser(user._id);
-                                setSelectRole(user.role.toString());
-                              }}
-                            >
-                              <PencilSquare
-                                className={`mt-1 ${
-                                  user._id === profile.id
-                                    ? "text-gray-300"
-                                    : "text-gray-500"
-                                }`}
-                              />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-48">
-                            <div className="mx-2 my-2 flex flex-col justify-center">
-                              <div>
-                                <h3 className="font-bold pb-1 text-lg">
-                                  ตำแหน่ง
-                                </h3>
-                              </div>
-                              <div>
-                                <RadioGroup
-                                  value={selectRole}
-                                  onValueChange={setSelectRole}
-                                >
-                                  <Radio value="1">User</Radio>
-                                  <Radio value="100">Admin</Radio>
-                                </RadioGroup>
-                              </div>
-                              <div>
-                                <Button
-                                  size="sm"
-                                  variant="light"
-                                  className="mt-2 mx-1"
-                                  onClick={() => {
-                                    setSelectedUser("");
-                                    setIsEditRoleOpen(false);
-                                  }}
-                                >
-                                  ยกเลิก
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  color="primary"
-                                  variant="flat"
-                                  className="mt-2 mx-1"
-                                  onClick={() => {
-                                    setSelectedUser("");
-                                    onSave(user._id, +selectRole);
-                                  }}
-                                >
-                                  บันทึก
-                                </Button>
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </TableCell>
                       <TableCell width={20}>
                         <Popover placement="bottom-end" color="default">
                           <PopoverTrigger>
-                            <button disabled={user._id === profile.id}>
+                            <button disabled={user.id === profile?.id}>
                               <TrashFill
                                 className={`mt-1 ${
-                                  user._id === profile.id
+                                  user.id === profile?.id
                                     ? "text-red-300"
                                     : "text-red-500"
                                 }`}
@@ -448,7 +294,7 @@ export default function ManageAccounts({
                                   size="sm"
                                   color="danger"
                                   onClick={() => {
-                                    onDelete(user._id);
+                                    onDelete(user.id);
                                   }}
                                 >
                                   ลบผู้ใช้
@@ -475,11 +321,11 @@ export async function getServerSideProps(ctx: any) {
     return { redirect: { destination: "/500", permanent: false } };
   }
 
-  const { data } = await client.GET("/api/v1/settings");
+  const { data } = await client.GET("/settings/");
 
-  const settings = data as settingsSchema;
+  const settings = data as GetSettingsDto;
 
-  const shopping_jwt = getCookie("shopping-jwt", {
+  const shopping_jwt = getCookie(jwt_token, {
     req: ctx.req,
     res: ctx.res,
   }) as string | null;
@@ -487,20 +333,14 @@ export async function getServerSideProps(ctx: any) {
   const profile = await getProfile(shopping_jwt);
 
   const allUsers = (
-    await client.GET("/api/v1/users", {
+    await client.GET("/users/", {
       headers: {
         Authorization: `Bearer ${shopping_jwt}`,
       },
     })
-  ).data as userSchama[];
+  ).data as UserResponseDto;
 
   if (shopping_jwt) {
-    if (profile?.role !== 100) {
-      return {
-        notFound: true,
-      };
-    }
-
     return {
       props: {
         settings,

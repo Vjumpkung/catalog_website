@@ -1,7 +1,8 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import AdminLayout from "@/components/AdminLayout";
 import { placeholder } from "@/const/placeholder";
-import { ProductAllResponseDto, settingsSchema } from "@/types/swagger.types";
+import { ProductAllResponseDto, GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { getProfile } from "@/utils/profile";
 import {
@@ -77,12 +78,17 @@ export default function AllProducts({
           <TableHeader>
             <TableColumn>ชื่อสินค้า</TableColumn>
             <TableColumn>รูปภาพ</TableColumn>
-            <TableColumn>สถานะ</TableColumn>
             <TableColumn>การเผยแพร่</TableColumn>
             <TableColumn>แก้ไข</TableColumn>
           </TableHeader>
           <TableBody>
             {products
+              .sort((a, b) => {
+                return (
+                  new Date(b.published_at).getTime() -
+                  new Date(a.published_at).getTime()
+                );
+              })
               ?.filter((product) => {
                 if (showAll) {
                   return product;
@@ -92,7 +98,7 @@ export default function AllProducts({
               })
               ?.map((product) => {
                 return (
-                  <TableRow key={product._id}>
+                  <TableRow key={product.id}>
                     <TableCell>
                       <div className="max-w-md">
                         <p className="truncate">{product.name}</p>
@@ -101,9 +107,9 @@ export default function AllProducts({
                     <TableCell width={80}>
                       <Image
                         src={
-                          product.image.length > 0
-                            ? isURL(product.image[0])
-                              ? product.image[0]
+                          product.images?.length > 0
+                            ? isURL(product.images[0])
+                              ? product.images[0]
                               : placeholder
                             : placeholder
                         }
@@ -114,15 +120,12 @@ export default function AllProducts({
                       />
                     </TableCell>
                     <TableCell width={70}>
-                      {product.isAvailable ? "มีสินค้า" : "หมด"}
-                    </TableCell>
-                    <TableCell width={70}>
                       {product.published_at !== null ? "เผยแพร่" : "แบบร่าง"}
                     </TableCell>
                     <TableCell width={20}>
                       <button
                         onClick={() =>
-                          router.push(`/admin/products/edit?id=${product._id}`)
+                          router.push(`/admin/products/edit?id=${product.id}`)
                         }
                       >
                         <PencilSquare className="mt-1" />
@@ -142,25 +145,17 @@ export async function getServerSideProps(ctx: any) {
   if (await apiCheck()) {
     return { redirect: { destination: "/500", permanent: false } };
   }
-  const { data } = await client.GET("/api/v1/settings");
+  const { data } = await client.GET("/settings/");
 
-  const settings = data as settingsSchema;
+  const settings = data as GetSettingsDto;
 
-  const shopping_jwt = getCookie("shopping-jwt", {
+  const shopping_jwt = getCookie(jwt_token, {
     req: ctx.req,
     res: ctx.res,
   }) as string | null;
 
-  const profile = await getProfile(shopping_jwt);
-
   if (shopping_jwt) {
-    if (profile?.role !== 100) {
-      return {
-        notFound: true,
-      };
-    }
-
-    const products = await client.GET("/api/v1/products", {
+    const products = await client.GET("/products/", {
       params: {
         query: {
           status: "all",
@@ -171,7 +166,7 @@ export async function getServerSideProps(ctx: any) {
     return {
       props: {
         settings,
-        products: (products.data as ProductAllResponseDto[] | undefined) || [],
+        products: (products.data as ProductAllResponseDto | undefined) || [],
       },
     };
   } else {

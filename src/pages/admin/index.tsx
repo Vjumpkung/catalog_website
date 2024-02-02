@@ -1,6 +1,7 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import AdminLayout from "@/components/AdminLayout";
-import { settingsSchema } from "@/types/swagger.types";
+import { GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { getProfile } from "@/utils/profile";
 import { getCookie } from "cookies-next";
@@ -30,24 +31,16 @@ export async function getServerSideProps(ctx: any) {
     return { redirect: { destination: "/500", permanent: false } };
   }
 
-  const { data } = await client.GET("/api/v1/settings");
+  const { data } = await client.GET("/settings/");
 
-  const settings = data as settingsSchema;
+  const settings = data as GetSettingsDto;
 
-  const shopping_jwt = getCookie("shopping-jwt", {
+  const shopping_jwt = getCookie(jwt_token, {
     req: ctx.req,
     res: ctx.res,
   }) as string | null;
 
-  const profile = await getProfile(shopping_jwt);
-
   if (shopping_jwt) {
-    if (profile?.role !== 100) {
-      return {
-        notFound: true,
-      };
-    }
-
     return {
       props: {
         settings,

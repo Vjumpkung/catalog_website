@@ -1,6 +1,7 @@
 import client from "@/api/client";
+import { jwt_token, upload_profile } from "@/utils/config";
 import AdminLayout from "@/components/AdminLayout";
-import { settingsSchema } from "@/types/swagger.types";
+import { GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { getProfile } from "@/utils/profile";
 import { Button, Image, Input } from "@nextui-org/react";
@@ -14,9 +15,9 @@ import { toast } from "react-toastify";
 export default function ShopSettings({
   settings,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const [loadsettings, setLoadSettings] = useState<settingsSchema>(settings);
+  const [loadsettings, setLoadSettings] = useState<GetSettingsDto>(settings);
   const [previewlogo, setPreviewLogo] = useState<string>(settings.logo);
-  const token = getCookie("shopping-jwt") as string | null;
+  const token = getCookie(jwt_token) as string | null;
   const [isLogoHover, setIsLogoHover] = useState<boolean>(false);
   const [showLogoSettings, setShowLogoSettings] = useState<boolean>(false);
   const [configlogo, setConfigLogo] = useState<string>(settings.logo);
@@ -26,7 +27,7 @@ export default function ShopSettings({
 
   function updateLogo() {
     client
-      .PATCH("/api/v1/settings", {
+      .PATCH("/settings/", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -42,7 +43,7 @@ export default function ShopSettings({
 
   function updateName() {
     client
-      .PATCH("/api/v1/settings", {
+      .PATCH("/settings/", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -123,7 +124,7 @@ export default function ShopSettings({
               <div className="flex-auto self-start">
                 <CldUploadButton
                   className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-xl text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                  uploadPreset="n1wehvy6"
+                  uploadPreset={upload_profile}
                   onUpload={(result, widget) => {
                     setResource(result?.info as CldUploadWidgetInfo);
                     widget.close();
@@ -204,11 +205,11 @@ export async function getServerSideProps(ctx: any) {
   if (await apiCheck()) {
     return { redirect: { destination: "/500", permanent: false } };
   }
-  const { data } = await client.GET("/api/v1/settings");
+  const { data } = await client.GET("/settings/");
 
-  const settings = data as settingsSchema;
+  const settings = data as GetSettingsDto;
 
-  const shopping_jwt = getCookie("shopping-jwt", {
+  const shopping_jwt = getCookie(jwt_token, {
     req: ctx.req,
     res: ctx.res,
   }) as string | null;
@@ -216,12 +217,6 @@ export async function getServerSideProps(ctx: any) {
   const profile = await getProfile(shopping_jwt);
 
   if (shopping_jwt) {
-    if (profile?.role !== 100) {
-      return {
-        notFound: true,
-      };
-    }
-
     return {
       props: {
         settings,

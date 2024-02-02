@@ -1,10 +1,11 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import AdminLayout from "@/components/AdminLayout";
 import ProductForm from "@/components/ProductForm";
 import {
   ProductResponseDto,
   ProductUpdateDto,
-  settingsSchema,
+  GetSettingsDto,
 } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { getProfile } from "@/utils/profile";
@@ -27,23 +28,20 @@ export default function EditProduct({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter();
   const id = router.query.id;
-  const token = getCookie("shopping-jwt") as string | null;
+  const token = getCookie(jwt_token) as string | null;
   const [productEdit, setProductEdit] = useState<ProductUpdateDto | undefined>({
     name: product_res?.name,
     description: product_res?.description,
     price: product_res?.price,
-    choices: product_res?.choices.map((choice) => choice._id),
-    image: product_res?.image,
+    choices: product_res?.choices.map((choice) => choice.id),
+    images: product_res?.images,
   });
-  const [isAvailable, setIsAvailable] = useState<boolean>(
-    product_res?.isAvailable as boolean
-  );
   const [published_at, setPublishedAt] = useState<boolean>(
     product_res?.published_at ? true : false
   );
 
   function onSave() {
-    client.PATCH("/api/v1/products/{id}/update", {
+    client.PATCH("/products/{id}/update", {
       headers: {
         authorization: `Bearer ${token}`,
       },
@@ -57,35 +55,22 @@ export default function EditProduct({
         description: productEdit?.description,
         choices: productEdit?.choices,
         price: productEdit?.price,
-        image: productEdit?.image,
+        images: productEdit?.images,
       },
     });
-    client.PATCH("/api/v1/products/{id}", {
+    client.PATCH(`/products/{id}`, {
       headers: {
         authorization: `Bearer ${token}`,
       },
       params: {
-        query: {
-          available: isAvailable,
-        },
         path: {
           id: id as string,
         },
+        query: {
+          status: published_at,
+        },
       },
     });
-    client.PATCH(
-      `/api/v1/products/{id}/${published_at ? "publish" : "draft"}`,
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-        params: {
-          path: {
-            id: id as string,
-          },
-        },
-      }
-    );
     toast.success("แก้ไขสินค้าเรียบร้อยแล้ว", { position: "bottom-right" });
     setTimeout(() => {
       router.push("/admin/products");
@@ -93,7 +78,7 @@ export default function EditProduct({
   }
 
   function onDelete() {
-    client.DELETE("/api/v1/products/{id}", {
+    client.DELETE("/products/{id}", {
       headers: {
         authorization: `Bearer ${token}`,
       },
@@ -161,7 +146,6 @@ export default function EditProduct({
       <ProductForm
         product_res={product_res}
         setProductUpdate={setProductEdit}
-        setAvailable={setIsAvailable}
         setIsPublish={setPublishedAt}
       />
     </AdminLayout>
@@ -172,11 +156,11 @@ export async function getServerSideProps(ctx: any) {
   if (await apiCheck()) {
     return { redirect: { destination: "/500", permanent: false } };
   }
-  const { data } = await client.GET("/api/v1/settings");
+  const { data } = await client.GET("/settings/");
 
-  const settings = data as settingsSchema;
+  const settings = data as GetSettingsDto;
 
-  const shopping_jwt = getCookie("shopping-jwt", {
+  const shopping_jwt = getCookie(jwt_token, {
     req: ctx.req,
     res: ctx.res,
   }) as string | null;
@@ -184,12 +168,6 @@ export async function getServerSideProps(ctx: any) {
   const profile = await getProfile(shopping_jwt);
 
   if (shopping_jwt) {
-    if (profile?.role !== 100) {
-      return {
-        notFound: true,
-      };
-    }
-
     if (ctx.query.id === undefined) {
       return {
         redirect: {
@@ -198,7 +176,7 @@ export async function getServerSideProps(ctx: any) {
         },
       };
     }
-    const product = await client.GET("/api/v1/products/{id}", {
+    const product = await client.GET("/products/{id}", {
       params: {
         path: {
           id: ctx.query.id as string,

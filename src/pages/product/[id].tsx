@@ -1,9 +1,10 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import LightBox from "@/components/LightBox";
 import ShoppingCartIcon from "@/components/ShoppingCart";
 import UserLayout from "@/components/UserLayout";
 import { placeholder } from "@/const/placeholder";
-import { ProductResponseDto, settingsSchema } from "@/types/swagger.types";
+import { ProductResponseDto, GetSettingsDto } from "@/types/swagger.types";
 import useWindowDimensions from "@/utils/checkviewport";
 import { getProfile } from "@/utils/profile";
 import {
@@ -44,53 +45,21 @@ export default function Product({
   let { width, height } = useWindowDimensions();
   const elementRef = useRef(null);
   const imageRef = useRef<any[]>([]);
-  imageRef.current = product.image.map(
+  imageRef.current = product.images?.map(
     (element, i) => imageRef.current[i] ?? createRef()
   );
-  const token = getCookie("shopping-jwt") as string | null;
+  const token = getCookie(jwt_token) as string | null;
   const [price, SetPrice] = useState<number>(-1);
   const [quantity, SetQuantity] = useState<number>(0);
   const [selectedChoice, SetSelectedChoice] = useState<string>("");
-  const [selectedImage, SetSelectedImage] = useState<string>(product.image[0]);
+  const [selectedImage, SetSelectedImage] = useState<string>(
+    product.images?.length > 0 ? product.images[0] : ""
+  );
   const [addinfo, SetAddinfo] = useState<string>("");
 
   const [openLightBox, setOpenLightBox] = useState<boolean>(false);
 
   const path = usePathname();
-
-  const addToCart = async () => {
-    if (quantity === 0) {
-      toast.error("กรุณาเลือกจำนวนสินค้า", { position: "bottom-right" });
-      return;
-    }
-
-    if (selectedChoice === "" && product.choices.length > 0) {
-      toast.error("กรุณาเลือกตัวเลือกสินค้า", { position: "bottom-right" });
-      return;
-    }
-
-    const { data, error, response } = await client.POST(
-      "/api/v1/shopping-cart/add",
-      {
-        body: {
-          product: product._id,
-          choice: selectedChoice !== "" ? selectedChoice : undefined,
-          amount: quantity,
-          additional_info: addinfo,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (response.status === 401) {
-      toast.error("กรุณาเข้าสู่ระบบก่อน", { position: "bottom-right" });
-      return;
-    }
-
-    toast.success("เพิ่มสินค้าลงในตะกร้าแล้ว", { position: "bottom-right" });
-  };
 
   const price_range =
     product.choices.length > 0
@@ -128,7 +97,7 @@ export default function Product({
             .filter((item) => item !== "")
             .map((item, index) => {
               const url = item === "product" ? "/" : item;
-              item = item === product._id ? product.name : item;
+              item = item === product.id ? product.name : item;
               return (
                 <BreadcrumbItem
                   key={index.toString() + Math.random().toString()}
@@ -145,17 +114,17 @@ export default function Product({
         </Breadcrumbs>
         <div className="grid xl:grid-cols-2">
           <div className="px-3 py-4 mx-auto max-w-[480px]">
-            {product.image.length > 0 ? (
+            {product.images?.length > 0 ? (
               <>
                 <div className="mx-auto relative aspect-square border border-gray-200">
                   <LightBox
-                    images={product.image}
+                    images={product.images}
                     display={openLightBox}
                     selectImage={selectedImage}
                     stateChanger={setOpenLightBox}
                   />
                   <div className="xl:block hidden">
-                    {product.image.map((image, index) => {
+                    {product.images.map((image, index) => {
                       return (
                         <div
                           key={isURL(image) ? image : placeholder}
@@ -189,7 +158,7 @@ export default function Product({
                     })}
                   </div>
                   <div className="xl:hidden snap-x snap-mandatory overflow-x-auto flex flex-nowrap no-scrollbar">
-                    {product.image.map((image, index) => {
+                    {product.images.map((image, index) => {
                       return (
                         <div
                           key={
@@ -229,7 +198,7 @@ export default function Product({
                     className="flex flex-row my-5 overflow-x-auto gap-2 no-scrollbar"
                     ref={elementRef}
                   >
-                    {product.image.map((image, index) => {
+                    {product.images.map((image, index) => {
                       return (
                         <div className="flex-none aspect-square" key={image}>
                           <button
@@ -291,7 +260,7 @@ export default function Product({
                 <p className="text-3xl font-medium text-left">
                   {product.choices.length > 0
                     ? `${price_range.min_price.toLocaleString()} - ${price_range.max_price.toLocaleString()}`
-                    : product.price.toLocaleString()}{" "}
+                    : product.price?.toLocaleString()}{" "}
                   บาท
                 </p>
               )}
@@ -303,15 +272,15 @@ export default function Product({
               {product.choices.length > 0
                 ? product.choices.map((choice) => {
                     return (
-                      <div className="my-2 pr-2" key={choice._id}>
+                      <div className="my-2 pr-2" key={choice.id}>
                         <Button
                           radius="sm"
                           onClick={() => {
                             SetPrice(choice.price);
-                            SetSelectedChoice(choice._id);
+                            SetSelectedChoice(choice.id);
                           }}
                           className={
-                            selectedChoice === choice._id
+                            selectedChoice === choice.id
                               ? `bg-gray-600 text-white`
                               : ``
                           }
@@ -322,86 +291,6 @@ export default function Product({
                     );
                   })
                 : null}
-            </div>
-            <div>
-              <h2 className="text-xl">จำนวน</h2>
-              <div className="relative flex items-center max-w-[8rem] pt-1">
-                <button
-                  type="button"
-                  onClick={() => SetQuantity(quantity > 0 ? quantity - 1 : 0)}
-                  className="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 focus:ring-2 focus:outline-none"
-                >
-                  <svg
-                    className="w-3 h-3 text-gray-900"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 18 2"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M1 1h16"
-                    />
-                  </svg>
-                </button>
-                <input
-                  type="text"
-                  className="w-14 bg-gray-100 border border-gray-300 h-11 text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block py-2.5"
-                  placeholder="0"
-                  value={quantity}
-                  onChange={(e) => {
-                    SetQuantity(+e.target.value);
-                  }}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => SetQuantity(quantity + 1)}
-                  className="bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 focus:ring-2 focus:outline-none"
-                >
-                  <svg
-                    className="w-3 h-3 text-gray-900"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 18 18"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 1v16M1 9h16"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div className="py-4">
-              <h2 className="text-xl">ข้อมูลเพิ่มเติม</h2>
-              <Textarea
-                className="pt-2"
-                onChange={(e) => {
-                  SetAddinfo(e.target.value);
-                }}
-              />
-            </div>
-            <div className="py-4">
-              <Button
-                size="lg"
-                onClick={() => addToCart()}
-                isDisabled={product.isAvailable === false}
-                color={product.isAvailable === false ? `default` : `primary`}
-                variant={product.isAvailable === false ? `faded` : `solid`}
-              >
-                {product.isAvailable ? (
-                  <ShoppingCartIcon width={20} height={20} fill="#FFFFFF" />
-                ) : null}
-                {product.isAvailable ? `เพิ่มไปยังตะกร้า` : `สินค้าหมด`}
-              </Button>
             </div>
           </div>
         </div>
@@ -431,7 +320,7 @@ export const getServerSideProps = async (context: any) => {
     return { redirect: { destination: "/500", permanent: false } };
   }
 
-  const { data, error, response } = await client.GET("/api/v1/products/{id}", {
+  const { data, error, response } = await client.GET("/products/{id}", {
     params: {
       path: {
         id: context.params.id as string,
@@ -439,9 +328,9 @@ export const getServerSideProps = async (context: any) => {
     },
   });
 
-  const get_settings = await client.GET("/api/v1/settings");
+  const get_settings = await client.GET("/settings/");
 
-  const shopping_jwt = getCookie("shopping-jwt", {
+  const shopping_jwt = getCookie(jwt_token, {
     req: context.req,
     res: context.res,
   }) as string | null;
@@ -454,7 +343,7 @@ export const getServerSideProps = async (context: any) => {
   }
 
   const product: ProductResponseDto = data;
-  const settings: settingsSchema = get_settings.data as settingsSchema;
+  const settings: GetSettingsDto = get_settings.data as GetSettingsDto;
 
   return {
     props: {

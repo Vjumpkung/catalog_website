@@ -1,6 +1,7 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import AdminLayout from "@/components/AdminLayout";
-import { choiceSchema, settingsSchema } from "@/types/swagger.types";
+import { ChoiceResponseDto, GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { getProfile } from "@/utils/profile";
 import {
@@ -23,7 +24,7 @@ export default function ManageChoices({
   settings,
   choices_res,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const [choices, setChoices] = useState<choiceSchema[] | undefined>(
+  const [choices, setChoices] = useState<ChoiceResponseDto[] | undefined>(
     choices_res
   );
   const router = useRouter();
@@ -58,13 +59,13 @@ export default function ManageChoices({
 
             <TableBody>
               {choices?.map((choice) => (
-                <TableRow key={choice._id}>
+                <TableRow key={choice.id}>
                   <TableCell>{choice.name}</TableCell>
                   <TableCell>{choice.price}</TableCell>
                   <TableCell width={20}>
                     <button
                       onClick={() =>
-                        router.push(`/admin/choices/edit?id=${choice._id}`)
+                        router.push(`/admin/choices/edit?id=${choice.id}`)
                       }
                     >
                       <PencilSquare className="mt-1" />
@@ -84,11 +85,11 @@ export async function getServerSideProps(ctx: any) {
   if (await apiCheck()) {
     return { redirect: { destination: "/500", permanent: false } };
   }
-  const { data } = await client.GET("/api/v1/settings");
+  const { data } = await client.GET("/settings/");
 
-  const settings = data as settingsSchema;
+  const settings = data as GetSettingsDto;
 
-  const shopping_jwt = getCookie("shopping-jwt", {
+  const shopping_jwt = getCookie(jwt_token, {
     req: ctx.req,
     res: ctx.res,
   }) as string | null;
@@ -96,13 +97,7 @@ export async function getServerSideProps(ctx: any) {
   const profile = await getProfile(shopping_jwt);
 
   if (shopping_jwt) {
-    if (profile?.role !== 100) {
-      return {
-        notFound: true,
-      };
-    }
-
-    const choices_res = await client.GET("/api/v1/choices", {
+    const choices_res = await client.GET("/choices/", {
       headers: {
         Authorization: `Bearer ${shopping_jwt}`,
       },
@@ -112,7 +107,7 @@ export async function getServerSideProps(ctx: any) {
       props: {
         settings,
         choices_res: (
-          (choices_res.data as choiceSchema[] | undefined) || []
+          (choices_res.data as ChoiceResponseDto[] | undefined) || []
         ).reverse(),
       },
     };

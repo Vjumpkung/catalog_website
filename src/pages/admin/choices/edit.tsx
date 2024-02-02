@@ -1,6 +1,7 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import AdminLayout from "@/components/AdminLayout";
-import { choiceSchema, settingsSchema } from "@/types/swagger.types";
+import { ChoiceResponseDto, GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { getProfile } from "@/utils/profile";
 import {
@@ -24,15 +25,17 @@ export default function EditChoice({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter();
   const id = router.query.id;
-  const [choice, setChoice] = useState<choiceSchema | undefined>(choice_res);
+  const [choice, setChoice] = useState<ChoiceResponseDto | undefined>(
+    choice_res
+  );
   const [choiceName, setChoiceName] = useState<string>(choice?.name as string);
   const [choicePrice, setChoicePrice] = useState<number>(
     choice?.price as number
   );
-  const token = getCookie("shopping-jwt") as string | null;
+  const token = getCookie(jwt_token) as string | null;
 
   function onSave() {
-    client.PATCH("/api/v1/choices/{id}", {
+    client.PATCH("/choices/{id}", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -53,7 +56,7 @@ export default function EditChoice({
   }
 
   function onDelete() {
-    client.DELETE("/api/v1/choices/{id}", {
+    client.DELETE("/choices/{id}", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -152,11 +155,11 @@ export async function getServerSideProps(ctx: any) {
   if (await apiCheck()) {
     return { redirect: { destination: "/500", permanent: false } };
   }
-  const { data } = await client.GET("/api/v1/settings");
+  const { data } = await client.GET("/settings/");
 
-  const settings = data as settingsSchema;
+  const settings = data as GetSettingsDto;
 
-  const shopping_jwt = getCookie("shopping-jwt", {
+  const shopping_jwt = getCookie(jwt_token, {
     req: ctx.req,
     res: ctx.res,
   }) as string | null;
@@ -164,12 +167,6 @@ export async function getServerSideProps(ctx: any) {
   const profile = await getProfile(shopping_jwt);
 
   if (shopping_jwt) {
-    if (profile?.role !== 100) {
-      return {
-        notFound: true,
-      };
-    }
-
     if (ctx.query.id === undefined) {
       return {
         redirect: {
@@ -179,7 +176,7 @@ export async function getServerSideProps(ctx: any) {
       };
     }
 
-    const choice = await client.GET("/api/v1/choices/{id}", {
+    const choice = await client.GET("/choices/{id}", {
       headers: {
         Authorization: `Bearer ${shopping_jwt}`,
       },
@@ -193,7 +190,7 @@ export async function getServerSideProps(ctx: any) {
     return {
       props: {
         settings,
-        choice_res: choice.data as choiceSchema | undefined,
+        choice_res: choice.data as ChoiceResponseDto | undefined,
       },
     };
   } else {

@@ -1,7 +1,8 @@
 import client from "@/api/client";
+import { jwt_token } from "@/utils/config";
 import { EyeFilledIcon } from "@/components/EyeFilledIcon";
 import { EyeSlashFilledIcon } from "@/components/EyeSlashFilledIcon";
-import { settingsSchema } from "@/types/swagger.types";
+import { GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
 import { useLogin } from "@/utils/login";
 import { Button, Image, Input } from "@nextui-org/react";
@@ -50,23 +51,19 @@ export default function SignIn({
 
     login(username, password)
       .then((res) => {
-        setCookie("shopping-jwt", res.access_token, {
+        setCookie(jwt_token, res.access_token, {
           maxAge: 60 * 60 * 24 * 30,
           path: "/",
         });
 
         client
-          .GET("/api/v1/auth/profile", {
+          .GET("/auth/me", {
             headers: {
               Authorization: `Bearer ${res.access_token}`,
             },
           })
           .then((res) => {
-            if (res.data?.role === 100) {
-              router.push("/admin");
-            } else {
-              router.push("/");
-            }
+            router.push("/admin");
           });
       })
       .catch((err) => {
@@ -156,11 +153,11 @@ export async function getServerSideProps({ req, res }: { req: any; res: any }) {
     return { redirect: { destination: "/500", permanent: false } };
   }
 
-  const { data } = await client.GET("/api/v1/settings");
+  const { data } = await client.GET("/settings/");
 
-  const settings = data as settingsSchema;
+  const settings = data as GetSettingsDto;
 
-  const shopping_jwt = getCookie("shopping-jwt", { req, res }) as
+  const shopping_jwt = getCookie(jwt_token, { req, res }) as
     | string
     | undefined
     | null;
