@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "gen-swagger": "npx openapi-typescript http://localhost:12345/swagger.json -o src/schema.d.ts"
+    "gen-swagger": "npx openapi-typescript http://localhost:12345/docs.json -o src/schema.d.ts"
   },
   "dependencies": {
     "@nextui-org/react": "^2.2.9",
