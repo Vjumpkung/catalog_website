@@ -1,11 +1,11 @@
 import client from "@/api/client";
-import { jwt_token } from "@/utils/config";
 import LightBox from "@/components/LightBox";
-import ShoppingCartIcon from "@/components/ShoppingCart";
 import UserLayout from "@/components/UserLayout";
 import { placeholder } from "@/const/placeholder";
-import { ProductResponseDto, GetSettingsDto } from "@/types/swagger.types";
+import { GetSettingsDto, ProductResponseDto } from "@/types/swagger.types";
+import apiCheck from "@/utils/apicheck";
 import useWindowDimensions from "@/utils/checkviewport";
+import { jwt_token } from "@/utils/config";
 import { getProfile } from "@/utils/profile";
 import {
   BreadcrumbItem,
@@ -13,19 +13,18 @@ import {
   Button,
   Divider,
   Image,
-  Textarea,
 } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
 import "github-markdown-css/github-markdown-light.css";
 import "highlight.js/styles/github.css";
 import { InferGetServerSidePropsType } from "next";
+import Head from "next/head";
 import NextImage from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createRef, useRef, useState } from "react";
 import { CaretLeftFill, CaretRightFill } from "react-bootstrap-icons";
 import Markdown from "react-markdown";
-import { toast } from "react-toastify";
 import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
@@ -34,8 +33,6 @@ import remarkGfm from "remark-gfm";
 import remarkToc from "remark-toc";
 import { isURL } from "validator";
 import { calculatedChoicePrice, priceRange } from "..";
-import Head from "next/head";
-import apiCheck from "@/utils/apicheck";
 
 export default function Product({
   product,
@@ -123,41 +120,7 @@ export default function Product({
                     selectImage={selectedImage}
                     stateChanger={setOpenLightBox}
                   />
-                  <div className="xl:block hidden">
-                    {product.images.map((image, index) => {
-                      return (
-                        <div
-                          key={isURL(image) ? image : placeholder}
-                          className={` ${
-                            selectedImage === image ? "block" : "hidden"
-                          }`}
-                        >
-                          <button
-                            key={
-                              isURL(image)
-                                ? image
-                                : placeholder + index.toString()
-                            }
-                            onClick={() => {
-                              setOpenLightBox(!openLightBox);
-                            }}
-                          >
-                            <Image
-                              className="object-contain my-auto h-full aspect-square"
-                              as={NextImage}
-                              src={isURL(image) ? image : placeholder}
-                              alt={"รูปภาพนั่นแหล่ะ"}
-                              radius="none"
-                              width={480}
-                              height={480}
-                              quality={100}
-                            />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="xl:hidden snap-x snap-mandatory overflow-x-auto flex flex-nowrap no-scrollbar">
+                  <div className="snap-x snap-mandatory overflow-x-auto flex flex-nowrap no-scrollbar">
                     {product.images.map((image, index) => {
                       return (
                         <div
@@ -169,16 +132,24 @@ export default function Product({
                           className="snap-center snap-always w-full flex-none"
                           ref={imageRef.current[index]}
                         >
-                          <Image
-                            className="object-contain my-auto h-full aspect-square"
-                            as={NextImage}
-                            src={isURL(image) ? image : placeholder}
-                            alt={"รูปภาพนั่นแหล่ะ"}
-                            width={480}
-                            height={480}
-                            quality={100}
-                            radius="none"
-                          />
+                          <button
+                            onClick={() => {
+                              if (width >= 1280) {
+                                setOpenLightBox(!openLightBox);
+                              }
+                            }}
+                          >
+                            <Image
+                              className="object-contain my-auto h-full aspect-square"
+                              as={NextImage}
+                              src={isURL(image) ? image : placeholder}
+                              alt={"รูปภาพนั่นแหล่ะ"}
+                              width={480}
+                              height={480}
+                              quality={100}
+                              radius="none"
+                            />
+                          </button>
                         </div>
                       );
                     })}
@@ -202,7 +173,13 @@ export default function Product({
                       return (
                         <div className="flex-none aspect-square" key={image}>
                           <button
-                            onMouseOver={() => SetSelectedImage(image)}
+                            onMouseOver={() => {
+                              SetSelectedImage(image);
+                              imageRef.current[index]?.current?.scrollIntoView({
+                                block: "center",
+                                inline: "center",
+                              });
+                            }}
                             onClick={() => {
                               if (width >= 1280) {
                                 setOpenLightBox(!openLightBox);

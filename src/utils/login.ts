@@ -1,5 +1,4 @@
 import client from "@/api/client";
-import { jwt_token } from "@/utils/config";
 import { LoginResponseDto } from "@/types/swagger.types";
 
 export const useLogin = () => {
