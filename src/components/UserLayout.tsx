@@ -16,7 +16,7 @@ export default function UserLayout({
       <main>
         <Header settings={settings} profile={profile} />
         {children}
-        <Footer />
+        <Footer settings={settings} />
       </main>
     </>
   );

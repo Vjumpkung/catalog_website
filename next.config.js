@@ -12,6 +12,7 @@ const nextConfig = {
   env: {
     API_URL: process.env.NEXT_PUBLIC_API_URL,
     JWT_NAME: process.env.JWT_NAME,
+    CLOUDINARY_UPLOAD_PROFILE: process.env.CLOUDINARY_UPLOAD_PROFILE,
   },
 };
 

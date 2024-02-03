@@ -12,7 +12,6 @@ import {
   Button,
   Checkbox,
   CheckboxGroup,
-  Divider,
   Input,
   Link,
   Modal,
@@ -218,7 +217,9 @@ export default function ProductForm({
         <div className="flex-grow">
           <Input
             value={productName}
-            onChange={(e) => setProductName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setProductName(e.target.value)
+            }
           />
         </div>
       </div>
@@ -253,7 +254,9 @@ export default function ProductForm({
           <Input
             value={price?.toString()}
             type="number"
-            onChange={(e) => setPrice(Number(e.target.value))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPrice(Number(e.target.value))
+            }
             endContent="บาท"
           />
           <small className="text-red-500">
@@ -288,7 +291,9 @@ export default function ProductForm({
                             <Checkbox
                               key={choice.id}
                               value={choice.id}
-                              onChange={(e) => {
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => {
                                 if (e.target.checked) {
                                   if (choices) {
                                     setChoices([...choices, choice]);
@@ -453,13 +458,17 @@ export default function ProductForm({
           <Input
             size="sm"
             value={newChoiceName}
-            onChange={(e) => setNewChoiceName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setNewChoiceName(e.target.value)
+            }
             label={<p>ชื่อตัวเลือก</p>}
           />
           <Input
             size="sm"
             value={newChoicePrice?.toString()}
-            onChange={(e) => setNewChoicePrice(+e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setNewChoicePrice(+e.target.value)
+            }
             type="number"
             label={<p>ราคา</p>}
           />
@@ -518,7 +527,7 @@ export default function ProductForm({
                       placeholder="URL รูปภาพ"
                       type="text"
                       value={image}
-                      onChange={(e) => {
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         const newImages = [...images];
                         newImages[index] = e.target.value;
                         setImages(newImages);
@@ -576,7 +585,7 @@ export default function ProductForm({
             color="default"
             isSelected={published_at}
             className="ml-2"
-            onChange={(e) => {
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               if (e.target.checked) {
                 setPublished_at(true);
               } else {

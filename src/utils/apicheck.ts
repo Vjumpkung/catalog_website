@@ -1,5 +1,4 @@
 import client from "@/api/client";
-import { jwt_token } from "@/utils/config";
 
 export default function apiCheck(): Promise<boolean> {
   let x = client
@@ -8,7 +7,7 @@ export default function apiCheck(): Promise<boolean> {
       return false;
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
       return true;
     });
 

@@ -1,9 +1,9 @@
 import client from "@/api/client";
-import { jwt_token, register_secret } from "@/utils/config";
 import { EyeFilledIcon } from "@/components/EyeFilledIcon";
 import { EyeSlashFilledIcon } from "@/components/EyeSlashFilledIcon";
 import { GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
+import { jwt_token, register_secret } from "@/utils/config";
 import { useRegister } from "@/utils/register";
 import { Button, Image, Input } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
@@ -12,7 +12,7 @@ import Head from "next/head";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 
 export default function SignUp({
@@ -21,7 +21,9 @@ export default function SignUp({
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
+    useState<boolean>(false);
   const [isExecute, setIsExecute] = useState<boolean>(false);
   const [isUsernameEmpty, setIsUsernameEmpty] = useState<boolean>(false);
   const [usernameErrorMessage, setUsernameErrorMessage] = useState<string>("");
@@ -31,7 +33,10 @@ export default function SignUp({
     useState<boolean>(false);
   const [confirmPasswordErrorMessage, setConfirmPasswordErrorMessage] =
     useState<string>("");
-  const toggleVisibility = () => setIsVisible(!isVisible);
+  const togglePasswordVisibility = () =>
+    setIsPasswordVisible(!isPasswordVisible);
+  const toggleConfirmPasswordVisibilty = () =>
+    setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
   const router = useRouter();
   const { register } = useRegister();
 
@@ -79,7 +84,7 @@ export default function SignUp({
       })
       .catch((err) => {
         setIsUsernameEmpty(true);
-        setUsernameErrorMessage("ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว");
+        setUsernameErrorMessage("มีการลงทะเบียนแล้วโปรดลงชื่อเข้าใช้");
       });
 
     setIsExecute(false);
@@ -115,7 +120,7 @@ export default function SignUp({
         />
         <Input
           className="p-1"
-          type={isVisible ? "text" : "password"}
+          type={isPasswordVisible ? "text" : "password"}
           size="sm"
           placeholder="รหัสผ่าน"
           errorMessage={passwordErrorMessage}
@@ -124,9 +129,9 @@ export default function SignUp({
             <button
               className="focus:outline-none"
               type="button"
-              onClick={toggleVisibility}
+              onClick={togglePasswordVisibility}
             >
-              {isVisible ? (
+              {isPasswordVisible ? (
                 <EyeSlashFilledIcon className="text-2xl text-default-400 pointer-events-none" />
               ) : (
                 <EyeFilledIcon className="text-2xl text-default-400 pointer-events-none" />
@@ -137,7 +142,7 @@ export default function SignUp({
         />
         <Input
           className="p-1"
-          type={isVisible ? "text" : "password"}
+          type={isConfirmPasswordVisible ? "text" : "password"}
           size="sm"
           placeholder="ยืนยันรหัสผ่าน"
           errorMessage={confirmPasswordErrorMessage}
@@ -146,9 +151,9 @@ export default function SignUp({
             <button
               className="focus:outline-none"
               type="button"
-              onClick={toggleVisibility}
+              onClick={toggleConfirmPasswordVisibilty}
             >
-              {isVisible ? (
+              {isConfirmPasswordVisible ? (
                 <EyeSlashFilledIcon className="text-2xl text-default-400 pointer-events-none" />
               ) : (
                 <EyeFilledIcon className="text-2xl text-default-400 pointer-events-none" />

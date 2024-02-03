@@ -1,9 +1,9 @@
 import client from "@/api/client";
-import { jwt_token } from "@/utils/config";
 import { EyeFilledIcon } from "@/components/EyeFilledIcon";
 import { EyeSlashFilledIcon } from "@/components/EyeSlashFilledIcon";
 import { GetSettingsDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
+import { jwt_token } from "@/utils/config";
 import { useLogin } from "@/utils/login";
 import { Button, Image, Input } from "@nextui-org/react";
 import { getCookie, setCookie } from "cookies-next";
@@ -11,7 +11,8 @@ import { InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { NextRequest, NextResponse } from "next/server";
+import { useState } from "react";
 
 export default function SignIn({
   settings,
@@ -134,21 +135,18 @@ export default function SignIn({
         >
           เข้าสู่ระบบ
         </Button>
-        <div className="w-full">
-          <p className="text-right">
-            หรือ{" "}
-            <Link href="/signup" className=" text-primary hover:text-blue-700">
-              ลงทะเบียน
-            </Link>{" "}
-            เลย!
-          </p>
-        </div>
       </form>
     </main>
   );
 }
 
-export async function getServerSideProps({ req, res }: { req: any; res: any }) {
+export async function getServerSideProps({
+  req,
+  res,
+}: {
+  req: NextRequest;
+  res: NextResponse;
+}) {
   if (await apiCheck()) {
     return { redirect: { destination: "/500", permanent: false } };
   }
