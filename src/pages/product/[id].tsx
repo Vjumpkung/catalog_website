@@ -113,13 +113,13 @@ export default function Product({
           <div className="px-3 py-4 mx-auto max-w-[480px]">
             {product.images?.length > 0 ? (
               <>
-                <div className="mx-auto relative aspect-square border border-gray-200">
-                  <LightBox
-                    images={product.images}
-                    display={openLightBox}
-                    selectImage={selectedImage}
-                    stateChanger={setOpenLightBox}
-                  />
+                <LightBox
+                  images={product.images}
+                  display={openLightBox}
+                  selectImage={selectedImage}
+                  stateChanger={setOpenLightBox}
+                />
+                <div className="mx-auto relative xl:border-hidden border border-gray-200">
                   <div className="snap-x snap-mandatory overflow-x-auto flex flex-nowrap no-scrollbar">
                     {product.images.map((image, index) => {
                       return (
@@ -194,12 +194,7 @@ export default function Product({
                             }}
                           >
                             <Image
-                              className={`border object-scale-down w-20 h-20 ${
-                                selectedImage ===
-                                (isURL(image) ? image : placeholder)
-                                  ? "border-gray-400"
-                                  : "border-gray-300"
-                              }`}
+                              className={`border object-scale-down w-20 h-20 border-gray-300 hover:border-gray-400 `}
                               as={NextImage}
                               src={isURL(image) ? image : placeholder}
                               alt={"รูปภาพนั่นแหล่ะ"}

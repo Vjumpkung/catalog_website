@@ -582,7 +582,7 @@ export default function ProductForm({
             แบบร่าง
           </span>
           <Switch
-            color="default"
+            color="primary"
             isSelected={published_at}
             className="ml-2"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,10 +1,9 @@
 import client from "@/api/client";
-import { jwt_token } from "@/utils/config";
 import AdminLayout from "@/components/AdminLayout";
 import { placeholder } from "@/const/placeholder";
-import { ProductAllResponseDto, GetSettingsDto } from "@/types/swagger.types";
+import { GetSettingsDto, ProductAllResponseDto } from "@/types/swagger.types";
 import apiCheck from "@/utils/apicheck";
-import { getProfile } from "@/utils/profile";
+import { jwt_token } from "@/utils/config";
 import {
   Button,
   Switch,
@@ -83,12 +82,6 @@ export default function AllProducts({
           </TableHeader>
           <TableBody>
             {products
-              .sort((a, b) => {
-                return (
-                  new Date(b.published_at).getTime() -
-                  new Date(a.published_at).getTime()
-                );
-              })
               ?.filter((product) => {
                 if (showAll) {
                   return product;

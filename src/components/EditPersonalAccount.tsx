@@ -79,7 +79,6 @@ export default function EditPersonalAccount({
             });
           });
         } else if (res.response.status === 400) {
-          console.log(res.error?.message);
           if (res.error?.message === "ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว") {
             setUpdateUsernameError(res.error?.message as string);
           }
