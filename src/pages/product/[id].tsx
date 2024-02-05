@@ -119,10 +119,10 @@ export default function Product({
           stateChanger={setOpenLightBox}
         />
         <div className="grid xl:grid-cols-2">
-          <div className="px-3 py-4 mx-auto max-w-[480px]">
+          <div className="px-3 my-4 mx-auto max-w-[480px]">
             {product.images?.length > 0 ? (
               <>
-                <div className="mx-auto relative border border-gray-200">
+                <div className="border border-gray-200">
                   <div className="xl:hidden snap-x snap-mandatory overflow-x-auto flex flex-nowrap no-scrollbar">
                     {product.images.map((image, index) => {
                       return (
@@ -150,7 +150,7 @@ export default function Product({
                       );
                     })}
                   </div>
-                  <div className="xl:flex snap-x snap-mandatory overflow-x-auto hidden flex-nowrap no-scrollbar">
+                  <div className="xl:block hidden">
                     {product.images.map((image, index) => {
                       return (
                         <div
@@ -159,14 +159,15 @@ export default function Product({
                               ? image
                               : placeholder + index.toString()
                           }
-                          className={`snap-center snap-always w-fit max-w-[460px] h-full max-h-[460px] flex-none ${
+                          className={`flex flex-grow ${
                             indexImgUrl === image + index.toString()
-                              ? "block"
+                              ? ""
                               : "hidden"
                           }`}
                           ref={imageRef.current[index]}
                         >
                           <button
+                            className=""
                             onClick={() => {
                               if (width >= 1280) {
                                 SetSelectedImage(image);
@@ -204,13 +205,10 @@ export default function Product({
                       <CaretLeftFill />
                     </button>
                   </div>
-                  <div className="flex flex-row my-5 overflow-x-auto gap-2 no-scrollbar snap-x snap-mandatory">
+                  <div className="flex flex-row my-5 overflow-x-auto gap-2 no-scrollbar">
                     {product.images.map((image, index) => {
                       return (
-                        <div
-                          className="flex-none aspect-square snap-always snap-center"
-                          key={image}
-                        >
+                        <div className="flex-none aspect-square" key={image}>
                           <button
                             onMouseOver={() => {
                               if (width >= 1280) {
