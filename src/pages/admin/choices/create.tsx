@@ -23,19 +23,22 @@ export default function CreateChoice({
   const token = getCookie(jwt_token) as string | null;
 
   function onCreate() {
-    client.POST("/choices/", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: {
-        name: choiceName,
-        price: choicePrice,
-      },
-    });
-    toast.success("เพิ่มตัวเลือกเรียบร้อยแล้ว", { position: "bottom-right" });
-    setTimeout(() => {
-      router.push("/admin/choices");
-    }, 500);
+    client
+      .POST("/choices/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: {
+          name: choiceName,
+          price: choicePrice,
+        },
+      })
+      .then(() => {
+        toast.success("เพิ่มตัวเลือกเรียบร้อยแล้ว", {
+          position: "bottom-right",
+        });
+        router.push("/admin/choices");
+      });
   }
 
   return (
@@ -86,6 +89,13 @@ export default function CreateChoice({
             <Input
               value={choicePrice?.toString()}
               type="number"
+              onKeyDown={(e) => {
+                if (e.key === "." || e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              min={0}
+              max={200000000}
               onChange={(e) => setChoicePrice(Number(e.target.value))}
               endContent="บาท"
             />

@@ -35,24 +35,27 @@ export default function EditChoice({
   const token = getCookie(jwt_token) as string | null;
 
   function onSave() {
-    client.PATCH("/choices/{id}", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: {
-        path: {
-          id: id as string,
+    client
+      .PATCH("/choices/{id}", {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      },
-      body: {
-        name: choiceName,
-        price: choicePrice,
-      },
-    });
-    toast.success("แก้ไขตัวเลือกเรียบร้อยแล้ว", { position: "bottom-right" });
-    setTimeout(() => {
-      router.push("/admin/choices");
-    }, 500);
+        params: {
+          path: {
+            id: id as string,
+          },
+        },
+        body: {
+          name: choiceName,
+          price: choicePrice,
+        },
+      })
+      .then(() => {
+        toast.success("แก้ไขตัวเลือกเรียบร้อยแล้ว", {
+          position: "bottom-right",
+        });
+        router.push("/admin/choices");
+      });
   }
 
   function onDelete() {
@@ -141,6 +144,13 @@ export default function EditChoice({
             <Input
               value={choicePrice?.toString()}
               type="number"
+              onKeyDown={(e) => {
+                if (e.key === "." || e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+              min={0}
+              max={200000000}
               onChange={(e) => setChoicePrice(Number(e.target.value))}
               endContent="บาท"
             />

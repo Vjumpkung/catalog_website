@@ -257,6 +257,13 @@ export default function ProductForm({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setPrice(Number(e.target.value))
             }
+            onKeyDown={(e) => {
+              if (e.key === "." || e.key === "-") {
+                e.preventDefault();
+              }
+            }}
+            min={0}
+            max={200000000}
             endContent="บาท"
           />
           <small className="text-red-500">
@@ -384,6 +391,13 @@ export default function ProductForm({
                             ? editChoicePrice?.toString()
                             : choice.price.toString()
                         }
+                        onKeyDown={(e) => {
+                          if (e.key === "." || e.key === "-" || e.key === "-") {
+                            e.preventDefault();
+                          }
+                        }}
+                        min={0}
+                        max={200000000}
                         onChange={(e) => {
                           setEditChoicePrice(+e.target.value);
                         }}
@@ -469,6 +483,13 @@ export default function ProductForm({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setNewChoicePrice(+e.target.value)
             }
+            onKeyDown={(e) => {
+              if (e.key === "." || e.key === "-") {
+                e.preventDefault();
+              }
+            }}
+            min={0}
+            max={200000000}
             type="number"
             label={<p>ราคา</p>}
           />
