@@ -54,26 +54,32 @@ export default function Product({
   const [selectedImage, SetSelectedImage] = useState<string>(
     product.images?.length > 0 ? product.images[0] : ""
   );
-
+  const [indexImgUrl, SetIndexImgUrl] = useState<string>(
+    product.images?.length > 0 ? product.images[0] + "0" : ""
+  );
   const [openLightBox, setOpenLightBox] = useState<boolean>(false);
-
   const path = usePathname();
-
   const price_range =
     product.choices.length > 0
       ? calculatedChoicePrice(product.choices)
       : new priceRange(0, 0);
 
-  useEffect(() => {
-    imageRef.current[thumbIndex]?.current?.scrollIntoView({
-      inline: "center",
-      block: "nearest",
-    });
+  function thumb_scroll() {
     thumbnailRef.current[thumbIndex]?.current?.scrollIntoView({
-      behavior: "smooth",
       inline: "center",
       block: "nearest",
     });
+  }
+
+  useEffect(() => {
+    if (width < 1280) {
+      imageRef.current[thumbIndex]?.current?.scrollIntoView({
+        inline: "center",
+        block: "nearest",
+      });
+    } else {
+      SetIndexImgUrl(product.images[thumbIndex] + thumbIndex.toString());
+    }
   }, [thumbIndex]);
 
   return (
@@ -117,7 +123,7 @@ export default function Product({
             {product.images?.length > 0 ? (
               <>
                 <div className="mx-auto relative border border-gray-200">
-                  <div className="snap-x snap-mandatory overflow-x-auto flex flex-nowrap no-scrollbar">
+                  <div className="xl:hidden snap-x snap-mandatory overflow-x-auto flex flex-nowrap no-scrollbar">
                     {product.images.map((image, index) => {
                       return (
                         <div
@@ -126,7 +132,38 @@ export default function Product({
                               ? image
                               : placeholder + index.toString()
                           }
-                          className="snap-center snap-always w-max max-w-[460px] h-full max-h-[460px] flex-none"
+                          className="snap-center snap-always w-fit max-w-[460px] h-full max-h-[460px] flex-none"
+                        >
+                          <Image
+                            className="object-contain my-auto h-full aspect-square"
+                            as={NextImage}
+                            src={isURL(image) ? image : placeholder}
+                            alt={"รูปภาพนั่นแหล่ะ"}
+                            width={480}
+                            height={480}
+                            quality={100}
+                            radius="none"
+                            ref={imageRef.current[index]}
+                            loading="eager"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="xl:flex snap-x snap-mandatory overflow-x-auto hidden flex-nowrap no-scrollbar">
+                    {product.images.map((image, index) => {
+                      return (
+                        <div
+                          key={
+                            isURL(image)
+                              ? image
+                              : placeholder + index.toString()
+                          }
+                          className={`snap-center snap-always w-fit max-w-[460px] h-full max-h-[460px] flex-none ${
+                            indexImgUrl === image + index.toString()
+                              ? "block"
+                              : "hidden"
+                          }`}
                           ref={imageRef.current[index]}
                         >
                           <button
@@ -146,6 +183,7 @@ export default function Product({
                               height={480}
                               quality={100}
                               radius="none"
+                              loading="eager"
                             />
                           </button>
                         </div>
@@ -159,29 +197,30 @@ export default function Product({
                       onClick={() => {
                         if (thumbIndex > 0) {
                           setThumbIndex(thumbIndex - 1);
+                          thumb_scroll();
                         }
                       }}
                     >
                       <CaretLeftFill />
                     </button>
                   </div>
-                  <div className="flex flex-row my-5 overflow-x-auto gap-2 no-scrollbar">
+                  <div className="flex flex-row my-5 overflow-x-auto gap-2 no-scrollbar snap-x snap-mandatory">
                     {product.images.map((image, index) => {
                       return (
-                        <div className="flex-none aspect-square" key={image}>
+                        <div
+                          className="flex-none aspect-square snap-always snap-center"
+                          key={image}
+                        >
                           <button
                             onMouseOver={() => {
-                              SetSelectedImage(image);
-                              imageRef.current[index]?.current?.scrollIntoView({
-                                inline: "center",
-                                block: "nearest",
-                              });
-                            }}
-                            onClick={() => {
                               if (width >= 1280) {
-                                setOpenLightBox(!openLightBox);
                                 setThumbIndex(index);
+                                SetIndexImgUrl(
+                                  product.images[thumbIndex] +
+                                    thumbIndex.toString()
+                                );
                               } else {
+                                SetSelectedImage(image);
                                 imageRef.current[
                                   index
                                 ]?.current?.scrollIntoView({
@@ -189,6 +228,12 @@ export default function Product({
                                   block: "nearest",
                                 });
                               }
+                            }}
+                            onClick={() => {
+                              if (width >= 1280) {
+                                setOpenLightBox(!openLightBox);
+                              }
+                              setThumbIndex(index);
                             }}
                           >
                             <Image
@@ -211,6 +256,7 @@ export default function Product({
                       onClick={() => {
                         if (thumbIndex < product.images.length - 1) {
                           setThumbIndex(thumbIndex + 1);
+                          thumb_scroll();
                         }
                       }}
                     >
