@@ -12,14 +12,13 @@ import {
   Breadcrumbs,
   Button,
   Divider,
-  Image,
 } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
 import "github-markdown-css/github-markdown-light.css";
 import "highlight.js/styles/github.css";
 import { InferGetServerSidePropsType } from "next";
 import Head from "next/head";
-import NextImage from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createRef, useEffect, useRef, useState } from "react";
@@ -136,13 +135,11 @@ export default function Product({
                         >
                           <Image
                             className="object-contain my-auto h-full aspect-square"
-                            as={NextImage}
                             src={isURL(image) ? image : placeholder}
                             alt={"รูปภาพนั่นแหล่ะ"}
                             width={480}
                             height={480}
                             quality={100}
-                            radius="none"
                             ref={imageRef.current[index]}
                             loading="eager"
                           />
@@ -177,13 +174,11 @@ export default function Product({
                           >
                             <Image
                               className="object-contain my-auto h-full aspect-square"
-                              as={NextImage}
                               src={isURL(image) ? image : placeholder}
                               alt={"รูปภาพนั่นแหล่ะ"}
                               width={480}
                               height={480}
                               quality={100}
-                              radius="none"
                               loading="eager"
                             />
                           </button>
@@ -238,10 +233,8 @@ export default function Product({
                             <Image
                               ref={thumbnailRef.current[index]}
                               className={`border aspect-square object-contain border-gray-300 hover:border-gray-600`}
-                              as={NextImage}
                               src={isURL(image) ? image : placeholder}
                               alt={"รูปภาพนั่นแหล่ะ"}
-                              radius="none"
                               width={77}
                               height={77}
                             />

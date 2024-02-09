@@ -10,11 +10,10 @@ import {
 import apiCheck from "@/utils/apicheck";
 import { getProfile } from "@/utils/profile";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Image } from "@nextui-org/react";
+import Image from "next/image";
 import { getCookie } from "cookies-next";
 import { InferGetServerSidePropsType } from "next";
 import Head from "next/head";
-import NextImage from "next/image";
 import Link from "next/link";
 import isURL from "validator/lib/isURL";
 
@@ -78,8 +77,6 @@ export default function Home({
                             <div className="mx-auto">
                               <Image
                                 className="object-scale-down max-h-52 h-full aspect-square"
-                                as={NextImage}
-                                radius="none"
                                 src={
                                   isURL(product.images[0])
                                     ? product.images[0]
